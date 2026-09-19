@@ -1,0 +1,16 @@
+export const apiMessageCodes = [
+  "EXTRACTION_CONFIRMATION_REQUIRED",
+  "INVALID_INPUT",
+  "INPUT_TOO_LARGE",
+  "REQUEST_TIMEOUT",
+  "URL_BLOCKED",
+  "URL_FETCH_FAILED",
+  "EXTRACTION_FAILED",
+  "RATE_LIMITED",
+  "GLOBAL_CAP_REACHED",
+  "GUARD_UNAVAILABLE",
+  "ESTIMATOR_UNAVAILABLE",
+  "INTERNAL_ERROR",
+] as const;
+
+export type ApiMessageCode = (typeof apiMessageCodes)[number];

@@ -1,26 +1,120 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f0e7;
+  --foreground: #1f2923;
+  --surface: #fffdf7;
+  --border: #c9c1b2;
+  --accent: #1f6a4d;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+.site-shell {
+  min-height: 100vh;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.locale-list {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.locale-link {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.locale-link:hover,
+.locale-link:focus-visible {
+  background: var(--surface);
+}
+
+.locale-link:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.locale-link[aria-current="page"] {
+  background: var(--foreground);
+  color: var(--surface);
+}
+
+.landing-main {
+  display: grid;
+  gap: 3rem;
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: clamp(4rem, 12vw, 9rem) 0;
+}
+
+.hero {
+  max-width: 52rem;
+}
+
+.hero h1 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(3rem, 9vw, 7rem);
+  line-height: 0.94;
+  letter-spacing: -0.06em;
+}
+
+.hero p {
+  max-width: 42rem;
+  margin: 2rem 0 0;
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  line-height: 1.55;
+}
+
+.estimate-notice {
+  max-width: 42rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.estimate-notice h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.estimate-notice p {
+  margin: 0;
+  line-height: 1.6;
 }

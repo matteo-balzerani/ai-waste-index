@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Waste Index public application
 
-## Getting Started
+Public Next.js application for the AI Waste Index MVP. The product evaluates estimated avoidable compute; it
+does not judge content quality, usefulness, truth or value.
 
-First, run the development server:
+## Status
+
+Milestone 2 is in progress. Steps 1–2 established the tested Next.js/strict TypeScript foundation and the IT/EN
+internationalisation architecture. Public contract schemas, the server-only estimator client and the interactive
+input shell remain assigned to the following Milestone 2 steps.
+
+The repository must not contain scoring logic, estimator fallbacks, proprietary methodology, secrets, user-content
+persistence, analytics or admin functionality. The browser will never call the estimator service directly.
+
+## Requirements
+
+- Node.js 22.12 or newer within the Node.js 22 release line;
+- npm with the committed lockfile.
+
+Install dependencies with:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.nvmrc` selects Node.js 22 for compatible version managers.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Next.js development server |
+| `npm run lint` | Run ESLint |
+| `npm run typecheck` | Run strict TypeScript checking without emitting files |
+| `npm test` | Run the Vitest suite once |
+| `npm run test:watch` | Run Vitest in watch mode |
+| `npm run build` | Create the production Next.js build |
+| `npm start` | Serve an existing production build |
 
-## Learn More
+Vitest uses jsdom and React Testing Library. Tests fail when no matching test files are present. Build output,
+coverage, local environment files and local Codex instructions remain untracked.
 
-To learn more about Next.js, take a look at the following resources:
+## Internationalisation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+User-facing content and metadata come from validated dictionaries under `src/i18n/`. Supported routes are `/it`
+and `/en`. Requests without a locale prefix use `Accept-Language` and fall back to English; the selection is not
+stored in a cookie or browser storage. Both routes are statically generated and render a matching HTML `lang`
+attribute. Stable API warning/error codes already have entries in both dictionaries, ready for the later public
+schema and route steps.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data and integration boundaries
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The application has no account, result history or application database. Content and results are transient and must
+not be written to browser storage, logs or server-side persistence. Future estimator integration will use only the
+documented black-box HTTP contract from server-only code and environment-provided credentials.
