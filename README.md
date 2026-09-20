@@ -5,9 +5,9 @@ does not judge content quality, usefulness, truth or value.
 
 ## Status
 
-Milestone 2 is in progress. Steps 1–2 established the tested Next.js/strict TypeScript foundation and the IT/EN
-internationalisation architecture. Public contract schemas, the server-only estimator client and the interactive
-input shell remain assigned to the following Milestone 2 steps.
+Milestone 2 is in progress. Steps 1–3 established the tested Next.js/strict TypeScript foundation, IT/EN
+internationalisation and strict public contract schemas. The server-only estimator client and interactive input
+shell remain assigned to the following Milestone 2 steps.
 
 The repository must not contain scoring logic, estimator fallbacks, proprietary methodology, secrets, user-content
 persistence, analytics or admin functionality. The browser will never call the estimator service directly.
@@ -47,6 +47,14 @@ and `/en`. Requests without a locale prefix use `Accept-Language` and fall back 
 stored in a cookie or browser storage. Both routes are statically generated and render a matching HTML `lang`
 attribute. Stable API warning/error codes already have entries in both dictionaries, ready for the later public
 schema and route steps.
+
+## Contract schemas
+
+Shared Zod schemas under `src/contracts/` validate analysis input, public and estimator results, extraction preview
+responses and code-only error envelopes. All wire objects are strict. Text limits are supplied explicitly by the
+caller and use Unicode code points. Environmental metric schemas require finite non-negative values ordered as
+`low <= value <= high`; malformed values are rejected without repair or fallback. The schemas contain only the
+public black-box wire contract and no scoring or calibration behaviour.
 
 ## Data and integration boundaries
 

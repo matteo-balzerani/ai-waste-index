@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { apiMessageCodes } from "@/i18n/api-message-codes";
+import { apiMessageCodes } from "@/contracts/codes";
 import { defaultLocale, isLocale, locales } from "@/i18n/config";
 import { assertDictionary, getDictionary } from "@/i18n/dictionaries";
 import { negotiateLocale } from "@/i18n/negotiate";

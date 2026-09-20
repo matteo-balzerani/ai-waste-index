@@ -1,4 +1,4 @@
-import type { ApiMessageCode } from "./api-message-codes";
+import type { ApiMessageCode } from "@/contracts/codes";
 
 export interface Dictionary {
   metadata: {
