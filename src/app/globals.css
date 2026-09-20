@@ -6,6 +6,8 @@
   --surface: #fffdf7;
   --border: #c9c1b2;
   --accent: #1f6a4d;
+  --accent-soft: #d9e8df;
+  --muted: #5f6b64;
 }
 
 * {
@@ -76,10 +78,200 @@ a {
 
 .landing-main {
   display: grid;
-  gap: 3rem;
+  gap: clamp(3rem, 7vw, 6rem);
   width: min(100% - 2rem, 72rem);
   margin: 0 auto;
   padding: clamp(4rem, 12vw, 9rem) 0;
+}
+
+.analysis-input {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.analysis-input-heading {
+  display: flex;
+  gap: 2rem;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.analysis-input-heading > div {
+  max-width: 42rem;
+}
+
+.section-label {
+  margin: 0 0 0.75rem;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.analysis-input h2 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  letter-spacing: -0.04em;
+}
+
+.analysis-input-heading p:last-child {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+.estimate-link {
+  flex: none;
+  padding: 0.7rem 0;
+  color: var(--accent);
+  font-weight: 700;
+  text-underline-offset: 0.3em;
+}
+
+.estimate-link:focus-visible {
+  border-radius: 0.25rem;
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.input-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+.input-tab {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.5rem;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 0.85rem;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.input-tab span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.input-tab:hover {
+  background: var(--surface);
+}
+
+.input-tab:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.input-tab[aria-selected="true"] {
+  background: var(--foreground);
+  color: var(--surface);
+}
+
+.input-tab[aria-selected="true"] span {
+  color: var(--accent-soft);
+}
+
+.input-panel {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.75fr) minmax(18rem, 1.25fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  min-height: 22rem;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--border);
+  border-radius: 1.5rem;
+  background: var(--surface);
+}
+
+.input-panel:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.input-panel-copy h3 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  letter-spacing: -0.03em;
+}
+
+.input-panel-copy p {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.input-field label {
+  font-weight: 700;
+}
+
+.input-field textarea,
+.input-field input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.input-field textarea {
+  min-height: 13rem;
+  padding: 1rem;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.input-field input[type="url"] {
+  min-height: 3.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.input-field input[type="file"] {
+  padding: 1rem;
+}
+
+.input-field textarea:focus-visible,
+.input-field input:focus-visible {
+  border-color: var(--accent);
+  outline: 3px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+.input-hint,
+.privacy-notice {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.input-hint {
+  margin: 0;
+}
+
+.privacy-notice {
+  margin: 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--accent);
 }
 
 .hero {
@@ -117,4 +309,29 @@ a {
 .estimate-notice p {
   margin: 0;
   line-height: 1.6;
+}
+
+@media (max-width: 42rem) {
+  .site-header,
+  .analysis-input-heading {
+    align-items: flex-start;
+  }
+
+  .analysis-input-heading {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .input-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .input-tab {
+    justify-content: flex-start;
+  }
+
+  .input-panel {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
 }

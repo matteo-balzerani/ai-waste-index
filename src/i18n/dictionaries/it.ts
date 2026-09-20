@@ -20,6 +20,45 @@ export const it = {
     estimateNoticeBody:
       "I risultati sono stime basate su assunzioni convenzionali. Non misurano l’impatto ambientale e non giudicano qualità, verità o valore del contenuto.",
   },
+  inputShell: {
+    sectionLabel: "01 / Input",
+    title: "Scegli cosa analizzare",
+    introduction:
+      "Parti da una sola fonte. La bozza esiste solo in questa pagina e non viene mai salvata.",
+    modeSelectorLabel: "Tipo di input",
+    estimateLink: "Come interpretare la stima",
+    privacyNotice:
+      "Cambiare tipo di input o lingua, lasciare la pagina o aggiornarla elimina la bozza corrente.",
+    modes: {
+      text: {
+        tabLabel: "Testo",
+        title: "Incolla il testo",
+        description:
+          "Usa direttamente il contenuto visibile. Il punteggio stima il calcolo evitabile, non il valore del contenuto.",
+        fieldLabel: "Contenuto da analizzare",
+        fieldHint:
+          "Il testo inserito direttamente non richiede una conferma dell’estrazione.",
+      },
+      url: {
+        tabLabel: "URL",
+        title: "Inserisci un URL pubblico",
+        description:
+          "Il testo leggibile della pagina verrà estratto tramite un flusso server protetto.",
+        fieldLabel: "URL del contenuto pubblico",
+        fieldHint:
+          "Il testo estratto sarà sempre modificabile e richiederà una conferma esplicita prima dell’analisi.",
+      },
+      screenshot: {
+        tabLabel: "Screenshot",
+        title: "Scegli uno screenshot",
+        description:
+          "Il riconoscimento del testo avverrà localmente nel browser; l’immagine non verrà caricata.",
+        fieldLabel: "Screenshot o immagine",
+        fieldHint:
+          "Il testo estratto sarà sempre modificabile e richiederà una conferma esplicita prima dell’analisi.",
+      },
+    },
+  },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Controlla e conferma il testo estratto prima dell’analisi.",

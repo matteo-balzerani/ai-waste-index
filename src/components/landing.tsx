@@ -3,6 +3,8 @@ import Link from "next/link";
 import { locales, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
 
+import { AnalysisInput } from "./analysis-input";
+
 interface LandingProps {
   dictionary: Dictionary;
   locale: Locale;
@@ -38,6 +40,8 @@ export function Landing({ dictionary, locale }: LandingProps) {
           <h1 id="page-title">{landing.title}</h1>
           <p>{landing.description}</p>
         </section>
+
+        <AnalysisInput copy={dictionary.inputShell} />
 
         <aside className="estimate-notice" aria-labelledby="estimate-notice-title">
           <h2 id="estimate-notice-title">{landing.estimateNoticeTitle}</h2>

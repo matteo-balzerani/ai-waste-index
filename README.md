@@ -5,9 +5,9 @@ does not judge content quality, usefulness, truth or value.
 
 ## Status
 
-Milestone 2 is in progress. Steps 1–4 established the tested Next.js/strict TypeScript foundation, IT/EN
-internationalisation, strict public contract schemas and the server-only estimator client. The interactive input
-shell remains assigned to Milestone 2 Step 5.
+Milestone 2 is complete. Steps 1–5 established the tested Next.js/strict TypeScript foundation, IT/EN
+internationalisation, strict public contract schemas, the server-only estimator client and the transient input
+shell for Text, URL and Screenshot modes.
 
 The repository must not contain scoring logic, estimator fallbacks, proprietary methodology, secrets, user-content
 persistence, analytics or admin functionality. The browser will never call the estimator service directly.
@@ -55,6 +55,16 @@ responses and code-only error envelopes. All wire objects are strict. Text limit
 caller and use Unicode code points. Environmental metric schemas require finite non-negative values ordered as
 `low <= value <= high`; malformed values are rejected without repair or fallback. The schemas contain only the
 public black-box wire contract and no scoring or calibration behaviour.
+
+## Input shell
+
+The landing page provides keyboard-operable Text, URL and Screenshot tabs in both locales. Draft text and URLs
+exist only in React component memory; selected files remain browser-local. Changing mode or navigating clears the
+active draft, including back-forward cache restoration. The shell does not use cookies, browser storage, query
+parameters or history state.
+
+This milestone deliberately adds no submit flow. `/api/analyze`, protected URL extraction and browser OCR belong
+to later milestones. The current screenshot control does not upload or process its file.
 
 ## Estimator client
 

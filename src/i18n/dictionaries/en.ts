@@ -20,6 +20,45 @@ export const en = {
     estimateNoticeBody:
       "Results are estimates based on conventional assumptions. They do not measure environmental impact or judge the quality, truth or value of the content.",
   },
+  inputShell: {
+    sectionLabel: "01 / Input",
+    title: "Choose what to analyse",
+    introduction:
+      "Start with one source. Draft content exists only on this page and is never saved.",
+    modeSelectorLabel: "Input type",
+    estimateLink: "How to interpret the estimate",
+    privacyNotice:
+      "Changing input type or language, leaving the page or refreshing discards the current draft.",
+    modes: {
+      text: {
+        tabLabel: "Text",
+        title: "Paste text",
+        description:
+          "Use the visible content directly. The score estimates avoidable compute, not the content’s value.",
+        fieldLabel: "Content to analyse",
+        fieldHint:
+          "Direct text does not require an extraction confirmation step.",
+      },
+      url: {
+        tabLabel: "URL",
+        title: "Enter a public URL",
+        description:
+          "The page’s readable text will be extracted through a protected server flow.",
+        fieldLabel: "Public content URL",
+        fieldHint:
+          "Extracted text will always be editable and require explicit confirmation before analysis.",
+      },
+      screenshot: {
+        tabLabel: "Screenshot",
+        title: "Choose a screenshot",
+        description:
+          "Text recognition will run locally in your browser; the image will not be uploaded.",
+        fieldLabel: "Screenshot or image",
+        fieldHint:
+          "Extracted text will always be editable and require explicit confirmation before analysis.",
+      },
+    },
+  },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Review and confirm the extracted text before analysis.",

@@ -17,5 +17,26 @@ export interface Dictionary {
     estimateNoticeTitle: string;
     estimateNoticeBody: string;
   };
+  inputShell: {
+    sectionLabel: string;
+    title: string;
+    introduction: string;
+    modeSelectorLabel: string;
+    estimateLink: string;
+    privacyNotice: string;
+    modes: {
+      text: InputModeCopy;
+      url: InputModeCopy;
+      screenshot: InputModeCopy;
+    };
+  };
   apiMessages: Record<ApiMessageCode, string>;
+}
+
+interface InputModeCopy {
+  tabLabel: string;
+  title: string;
+  description: string;
+  fieldLabel: string;
+  fieldHint: string;
 }
