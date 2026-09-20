@@ -5,9 +5,9 @@ does not judge content quality, usefulness, truth or value.
 
 ## Status
 
-Milestone 2 is in progress. Steps 1–3 established the tested Next.js/strict TypeScript foundation, IT/EN
-internationalisation and strict public contract schemas. The server-only estimator client and interactive input
-shell remain assigned to the following Milestone 2 steps.
+Milestone 2 is in progress. Steps 1–4 established the tested Next.js/strict TypeScript foundation, IT/EN
+internationalisation, strict public contract schemas and the server-only estimator client. The interactive input
+shell remains assigned to Milestone 2 Step 5.
 
 The repository must not contain scoring logic, estimator fallbacks, proprietary methodology, secrets, user-content
 persistence, analytics or admin functionality. The browser will never call the estimator service directly.
@@ -56,8 +56,22 @@ caller and use Unicode code points. Environmental metric schemas require finite 
 `low <= value <= high`; malformed values are rejected without repair or fallback. The schemas contain only the
 public black-box wire contract and no scoring or calibration behaviour.
 
+## Estimator client
+
+`src/server/estimator/` contains the generic black-box HTTP client. Its modules carry the `server-only` marker,
+send only confirmed text plus source/locale metadata, authenticate with `X-Estimator-Key`, and validate every
+success or error response before returning public result fields. The client makes one request with no retry or
+fallback, applies one total timeout, bounds streamed response bytes before buffering, propagates cancellation,
+requires the contract's no-store headers and maps upstream failures to safe public codes.
+
+Copy `.env.example` to a local ignored environment file and replace its deliberately invalid placeholder key.
+All five settings are mandatory positive/valid values: `ESTIMATOR_BASE_URL`, `ESTIMATOR_API_KEY`,
+`ESTIMATOR_TIMEOUT_MS`, `MAX_ESTIMATOR_RESPONSE_BYTES` and `MAX_ANALYSIS_TEXT_CHARS`. Never expose them through
+`NEXT_PUBLIC_*`. Step 4 adds no public API route and performs no estimator call during page rendering or build.
+
 ## Data and integration boundaries
 
 The application has no account, result history or application database. Content and results are transient and must
-not be written to browser storage, logs or server-side persistence. Future estimator integration will use only the
-documented black-box HTTP contract from server-only code and environment-provided credentials.
+not be written to browser storage, logs or server-side persistence. Estimator integration uses only the documented
+black-box HTTP contract from server-only code and environment-provided credentials. No browser code imports the
+client.
