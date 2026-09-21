@@ -7,12 +7,14 @@ interface LandingProps {
   dictionary: Dictionary;
   locale: Locale;
   maxTextCodePoints: number | null;
+  maxUrlChars?: number | null;
 }
 
 export function Landing({
   dictionary,
   locale,
   maxTextCodePoints,
+  maxUrlChars,
 }: LandingProps) {
   const { landing, navigation } = dictionary;
 
@@ -50,6 +52,7 @@ export function Landing({
           dictionary={dictionary}
           locale={locale}
           maxTextCodePoints={maxTextCodePoints}
+          maxUrlChars={maxUrlChars}
         />
 
         <aside

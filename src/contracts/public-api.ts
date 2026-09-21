@@ -22,6 +22,25 @@ export function createAnalyzeRequestSchema(maxTextCodePoints: number) {
   });
 }
 
+export function createExtractionRequestSchema(maxUrlChars: number) {
+  if (!Number.isSafeInteger(maxUrlChars) || maxUrlChars <= 0)
+    throw new RangeError("Invalid URL limit");
+  return z.strictObject({
+    url: z
+      .string()
+      .min(1)
+      .refine((value) => [...value].length <= maxUrlChars)
+      .refine((value) => {
+        try {
+          new URL(value);
+          return true;
+        } catch {
+          return false;
+        }
+      }),
+  });
+}
+
 export const publicResultSchema = z.strictObject(resultFields);
 
 export function createExtractionSuccessSchema(maxTextCodePoints: number) {

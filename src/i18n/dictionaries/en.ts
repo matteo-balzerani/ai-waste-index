@@ -87,6 +87,18 @@ export const en = {
     privacy:
       "This result exists only on this page. Refreshing, changing language or leaving the page discards it.",
   },
+  extraction: {
+    submit: "Extract text",
+    pending: "Extracting text…",
+    previewTitle: "Review the extracted text",
+    previewLabel: "Text to analyse",
+    confirmation: "I have reviewed and confirm this text.",
+    analyze: "Analyse confirmed text",
+    changeUrl: "Change URL",
+    urlLimit: "Maximum URL characters",
+    availability:
+      "Use a public HTML or text page. Pages that require sign-in or JavaScript may not be readable. You can paste the text directly instead.",
+  },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Review and confirm the extracted text before analysis.",

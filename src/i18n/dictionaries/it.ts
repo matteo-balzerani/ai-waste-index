@@ -87,6 +87,18 @@ export const it = {
     privacy:
       "Questo risultato esiste solo in questa pagina. Aggiornare, cambiare lingua o lasciare la pagina lo elimina.",
   },
+  extraction: {
+    submit: "Estrai il testo",
+    pending: "Estrazione del testo…",
+    previewTitle: "Controlla il testo estratto",
+    previewLabel: "Testo da analizzare",
+    confirmation: "Ho controllato e confermo questo testo.",
+    analyze: "Analizza il testo confermato",
+    changeUrl: "Cambia URL",
+    urlLimit: "Caratteri massimi dell’URL",
+    availability:
+      "Usa una pagina pubblica HTML o di testo. Le pagine che richiedono accesso o JavaScript potrebbero non essere leggibili. In alternativa puoi incollare direttamente il testo.",
+  },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Controlla e conferma il testo estratto prima dell’analisi.",

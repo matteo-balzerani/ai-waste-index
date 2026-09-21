@@ -6,6 +6,8 @@ import { getDictionary } from "@/i18n/dictionaries";
 
 import { loadInputLimits } from "@/server/analysis/config";
 
+import { loadExtractionConfig } from "@/server/extraction/config";
+
 export const dynamic = "force-dynamic";
 
 interface LocalePageProps {
@@ -25,11 +27,18 @@ export default async function LocalePage({ params }: LocalePageProps) {
   } catch {
     // Configuration values/errors must not be exposed to browser clients.
   }
+  let maxUrlChars: number | null = null;
+  try {
+    maxUrlChars = loadExtractionConfig().maxUrlChars;
+  } catch {
+    /* Safe unavailable state. */
+  }
   return (
     <Landing
       dictionary={getDictionary(locale)}
       locale={locale}
       maxTextCodePoints={maxTextCodePoints}
+      maxUrlChars={maxUrlChars}
     />
   );
 }

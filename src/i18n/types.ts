@@ -53,6 +53,17 @@ export interface Dictionary {
     demoNotice: string;
     privacy: string;
   };
+  extraction: {
+    submit: string;
+    pending: string;
+    previewTitle: string;
+    previewLabel: string;
+    confirmation: string;
+    analyze: string;
+    changeUrl: string;
+    urlLimit: string;
+    availability: string;
+  };
   apiMessages: Record<ApiMessageCode, string>;
 }
 
