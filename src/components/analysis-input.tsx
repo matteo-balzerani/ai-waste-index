@@ -334,6 +334,8 @@ export function AnalysisInput({
         result={result}
         locale={locale}
         copy={dictionary.analysis}
+        sharing={dictionary.sharing}
+        brand={dictionary.landing.brand}
         onReset={reset}
       />
     );

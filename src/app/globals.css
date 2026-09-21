@@ -477,3 +477,68 @@ button:disabled {
 .analysis-actions {
   flex-wrap: wrap;
 }
+
+.result-sharing {
+  display: grid;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.result-sharing > p {
+  margin: 0;
+}
+.share-card-panel {
+  display: grid;
+  gap: 1rem;
+}
+.share-card-panel > h4 {
+  margin: 0;
+}
+.share-card-panel > button {
+  justify-self: start;
+}
+.share-card-panel > h4:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.share-card {
+  width: 100%;
+  max-width: 42rem;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  border: 1px solid #536158;
+  border-top: 8px solid #193e35;
+  border-radius: 1rem;
+  background: #f5f4ec;
+  color: #232722;
+  overflow-wrap: anywhere;
+}
+.share-card p {
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+.share-card .share-card-brand {
+  color: #193e35;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+.share-card-score {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0 1.5rem;
+}
+.share-card-score p {
+  margin-bottom: 0.5rem;
+}
+.share-card-score strong {
+  font-size: clamp(2rem, 8vw, 4.5rem);
+}
+.share-card-version {
+  border-top: 1px solid #536158;
+  padding-top: 1.5rem;
+  white-space: pre-wrap;
+}
+.share-card .share-card-demo {
+  color: #7b361b;
+  margin-bottom: 0;
+}

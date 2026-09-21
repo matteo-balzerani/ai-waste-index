@@ -72,6 +72,25 @@ export interface Dictionary {
     failed: string;
     timeout: string;
   };
+  sharing: {
+    title: string;
+    description: string;
+    context: string;
+    disclaimer: string;
+    copyText: string;
+    copyBadge: string;
+    showCard: string;
+    copyImage: string;
+    cardTitle: string;
+    screenshotHint: string;
+    pending: string;
+    textCopied: string;
+    badgeCopied: string;
+    imageCopied: string;
+    textFallback: string;
+    imageFallback: string;
+    manualLabel: string;
+  };
   apiMessages: Record<ApiMessageCode, string>;
 }
 

@@ -75,7 +75,7 @@ language navigation, back/forward restoration and starting again discard the res
 
 URL extraction always produces an editable review step; editing its text revokes confirmation. Only the
 confirmed text and `sourceType: "url"` reach analysis, never the original URL. Screenshot extraction uses
-the same mandatory review flow with `sourceType: "screenshot"`. Sharing remains a later step.
+the same mandatory review flow with `sourceType: "screenshot"`. Each transient result offers local text, badge and share-card copy actions.
 
 ## Estimator client
 
@@ -178,6 +178,34 @@ bundle and disables language persistence (`cacheMethod: "none"`, no storage adap
 are suppressed; only safe errors and plain extracted text leave the worker. Dependency upgrades must rerun
 the real browser OCR, cancellation, deadline and no-upload/no-storage tests to verify this integration.
 
+## Local sharing
+
+The result offers localized **Copy result text**, **Copy badge text** and **Show share card** actions. Result
+text includes all three environmental estimates with their estimated ranges; the compact badge and card show
+brand, estimated-avoidable-compute context, returned score/class, methodology version and an estimate disclaimer.
+Every output from a `stub-*` methodology also includes the demonstration warning. These helpers only format
+returned fields; they never compute or infer a score, class or metric. Input content, source URLs and screenshot
+bytes are not available to the sharing component.
+
+`src/browser/sharing/model.ts` builds the common presentation model. `card.ts` renders an opaque PNG with the
+browser canvas using local system fonts; there are no image/font fetches, server rendering endpoints, hosted
+images, downloads or public result links. The HTML preview contains the same disclosures, wraps long versions
+and remains suitable for a manual screenshot on narrow screens. The badge can be copied as equivalent text.
+
+Clipboard writes occur only on explicit button clicks. The image action supplies a Promise of the locally
+encoded PNG to ClipboardItem and invokes write during that click, following the
+[Clipboard API](https://www.w3.org/TR/clipboard-apis/#clipboarditem) data model. Missing support or denied
+permission exposes selectable text or keeps the screenshot-ready card visible; raw platform errors are never
+shown or logged. Production application code never reads the clipboard or asks for read permission.
+
+Rendering is bounded to 1080 × at most 4096 pixels and 8192 characters of card copy; excessive metadata refuses
+PNG export instead of clipping its version/disclaimer. The full text/HTML fallback remains available. Canvas
+encoding has a five-second deadline. Success, failure, timeout and result unmount clear the temporary canvas;
+late encodes are discarded on cancellation and late clipboard completions cannot restore UI state. No object
+URLs, data URLs, browser storage, telemetry, social publishing integration or additional API calls are used.
+Clipboard content explicitly copied by the user remains under the user's control after leaving the page; the
+application retains no recoverable result or card. Refresh, locale navigation or a new analysis clears the UI.
+
 ## Browser tests
 
 Install Chromium with `npx playwright install chromium`. With the local app and estimator running, execute
@@ -187,6 +215,10 @@ review/edit/confirmation, call the real local estimator after confirmation, and 
 Screenshot browser tests generate synthetic PNG/JPEG images in memory, run the real OCR in both locales,
 inspect requests (only confirmed text is POSTed), verify empty browser storage and exercise native worker
 termination on cancellation/deadline plus invalid-format/pixel-bomb rejection before engine loading.
+Sharing tests use Chromium's real clipboard for text, badge and PNG, inspect image dimensions, assert zero
+sharing network requests/storage, and verify manual-copy/mobile-card fallback and lifecycle loss in IT/EN.
+Only the isolated browser test context is granted clipboard read permission to inspect its own synthetic test
+output; the application itself uses write-only actions.
 The server integration suite uses real HTTP sockets mapped to isolated test servers to test fetching, redirects,
 DNS pinning, bounds, actual worker parsing and cancellation without depending on internet availability. The
 production route has no dependency-injection or address-bypass setting exposed to requests/configuration. They use synthetic content and do not record screenshots, video or traces. Unit/integration tests

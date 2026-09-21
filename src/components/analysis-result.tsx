@@ -5,15 +5,21 @@ import type { PublicResult } from "@/contracts";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
 
+import { ResultSharing } from "./result-sharing";
+
 export function AnalysisResult({
   result,
   locale,
   copy,
+  sharing,
+  brand,
   onReset,
 }: {
   result: PublicResult;
   locale: Locale;
   copy: Dictionary["analysis"];
+  sharing: Dictionary["sharing"];
+  brand: string;
   onReset: () => void;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
@@ -80,6 +86,13 @@ export function AnalysisResult({
         </p>
         <p>{copy.disclaimer}</p>
       </div>
+      <ResultSharing
+        result={result}
+        locale={locale}
+        analysis={copy}
+        copy={sharing}
+        brand={brand}
+      />
       <p className="privacy-notice">{copy.privacy}</p>
       <button className="primary-action" type="button" onClick={onReset}>
         {copy.newAnalysis}

@@ -111,6 +111,29 @@ export const it = {
     timeout:
       "La lettura dell’immagine ha richiesto troppo tempo ed è stata interrotta. Prova uno screenshot più piccolo oppure incolla direttamente il testo.",
   },
+  sharing: {
+    title: "Condividi questo risultato",
+    description:
+      "Copia il risultato o un badge compatto, oppure prepara una scheda da condividere tu.",
+    context: "Calcolo IA evitabile stimato",
+    disclaimer: "Valori stimati, non misurati.",
+    copyText: "Copia il testo del risultato",
+    copyBadge: "Copia il testo del badge",
+    showCard: "Mostra la scheda",
+    copyImage: "Copia l’immagine della scheda",
+    cardTitle: "La tua scheda da condividere",
+    screenshotHint:
+      "Puoi anche fare uno screenshot di questa scheda. Includi la versione della metodologia e il disclaimer di stima.",
+    pending: "Copia in corso…",
+    textCopied: "Testo del risultato copiato.",
+    badgeCopied: "Testo del badge copiato.",
+    imageCopied: "Immagine della scheda copiata.",
+    textFallback:
+      "La copia automatica non è disponibile. Seleziona e copia il testo qui sotto.",
+    imageFallback:
+      "Non è stato possibile copiare l’immagine in questo browser. Puoi fare uno screenshot della scheda.",
+    manualLabel: "Testo da copiare manualmente",
+  },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Controlla e conferma il testo estratto prima dell’analisi.",

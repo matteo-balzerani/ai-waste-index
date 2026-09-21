@@ -111,6 +111,29 @@ export const en = {
     timeout:
       "Reading the image took too long and was stopped. Try a smaller screenshot or paste the text directly.",
   },
+  sharing: {
+    title: "Share this result",
+    description:
+      "Copy the result or a compact badge, or prepare a card to share yourself.",
+    context: "Estimated avoidable AI compute",
+    disclaimer: "Estimated, not measured.",
+    copyText: "Copy result text",
+    copyBadge: "Copy badge text",
+    showCard: "Show share card",
+    copyImage: "Copy card image",
+    cardTitle: "Your share card",
+    screenshotHint:
+      "You can also take a screenshot of this card. Include the methodology version and estimate disclaimer.",
+    pending: "Copying…",
+    textCopied: "Result text copied.",
+    badgeCopied: "Badge text copied.",
+    imageCopied: "Card image copied.",
+    textFallback:
+      "Automatic copying is unavailable. Select and copy the text below.",
+    imageFallback:
+      "The image could not be copied in this browser. Take a screenshot of the card instead.",
+    manualLabel: "Text to copy manually",
+  },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Review and confirm the extracted text before analysis.",
