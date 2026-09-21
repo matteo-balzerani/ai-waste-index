@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Browser test metadata; no traces/screenshots of submitted content.
+/test-results/
+/playwright-report/

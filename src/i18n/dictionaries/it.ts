@@ -59,6 +59,34 @@ export const it = {
       },
     },
   },
+  analysis: {
+    submit: "Analizza il testo",
+    pending: "Analisi in corso…",
+    cancel: "Annulla",
+    newAnalysis: "Inizia una nuova analisi",
+    textLimit: "Caratteri massimi",
+    unavailableMode:
+      "Questo tipo di input sarà disponibile in una fase successiva della demo locale.",
+    resultTitle: "Il tuo risultato",
+    scoreLabel: "AI Waste Score",
+    classLabel: "Classe",
+    estimatesTitle: "Stime ambientali derivate",
+    estimatedValue: "Valore stimato",
+    estimatedRange: "Intervallo stimato",
+    energy: "Energia",
+    carbon: "CO2e",
+    water: "Acqua",
+    methodologyTitle: "Cosa viene stimato",
+    methodologyBody:
+      "Il punteggio stima il calcolo evitabile associato alla produzione del contenuto visibile. Il modello può considerare generazione, tentativi e revisioni. Le stime di energia, carbonio e acqua derivano dalle assunzioni sul calcolo e non determinano il punteggio. Le assunzioni sono convenzionali e non modificabili qui. Qualità, verità e valore del contenuto non vengono valutati.",
+    methodologyVersion: "Versione della metodologia",
+    disclaimer:
+      "Stime, non misurazioni. Gli intervalli sono stime, non barre di errore di misura o intervalli di confidenza.",
+    demoNotice:
+      "Dimostrazione locale: questi sono valori di prova, non stime reali. La metodologia di calcolo non è ancora disponibile.",
+    privacy:
+      "Questo risultato esiste solo in questa pagina. Aggiornare, cambiare lingua o lasciare la pagina lo elimina.",
+  },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Controlla e conferma il testo estratto prima dell’analisi.",
@@ -70,8 +98,10 @@ export const it = {
     EXTRACTION_FAILED: "Non è stato possibile estrarre testo utilizzabile.",
     RATE_LIMITED: "Troppe richieste. Riprova più tardi.",
     GLOBAL_CAP_REACHED: "Il servizio ha raggiunto la capacità disponibile.",
-    GUARD_UNAVAILABLE: "La protezione del servizio non è temporaneamente disponibile.",
-    ESTIMATOR_UNAVAILABLE: "Il servizio di stima non è temporaneamente disponibile.",
+    GUARD_UNAVAILABLE:
+      "La protezione del servizio non è temporaneamente disponibile.",
+    ESTIMATOR_UNAVAILABLE:
+      "Il servizio di stima non è temporaneamente disponibile.",
     INTERNAL_ERROR: "Si è verificato un errore tecnico. Riprova più tardi.",
   },
 } satisfies Dictionary;

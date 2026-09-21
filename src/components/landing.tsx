@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { locales, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
 
@@ -8,9 +6,14 @@ import { AnalysisInput } from "./analysis-input";
 interface LandingProps {
   dictionary: Dictionary;
   locale: Locale;
+  maxTextCodePoints: number | null;
 }
 
-export function Landing({ dictionary, locale }: LandingProps) {
+export function Landing({
+  dictionary,
+  locale,
+  maxTextCodePoints,
+}: LandingProps) {
   const { landing, navigation } = dictionary;
 
   return (
@@ -21,14 +24,14 @@ export function Landing({ dictionary, locale }: LandingProps) {
           <ul className="locale-list">
             {locales.map((candidate) => (
               <li key={candidate}>
-                <Link
+                <a
                   aria-current={candidate === locale ? "page" : undefined}
                   className="locale-link"
                   href={`/${candidate}`}
                   hrefLang={candidate}
                 >
                   {candidate === "it" ? navigation.italian : navigation.english}
-                </Link>
+                </a>
               </li>
             ))}
           </ul>
@@ -41,9 +44,18 @@ export function Landing({ dictionary, locale }: LandingProps) {
           <p>{landing.description}</p>
         </section>
 
-        <AnalysisInput copy={dictionary.inputShell} />
+        <AnalysisInput
+          key={locale}
+          copy={dictionary.inputShell}
+          dictionary={dictionary}
+          locale={locale}
+          maxTextCodePoints={maxTextCodePoints}
+        />
 
-        <aside className="estimate-notice" aria-labelledby="estimate-notice-title">
+        <aside
+          className="estimate-notice"
+          aria-labelledby="estimate-notice-title"
+        >
           <h2 id="estimate-notice-title">{landing.estimateNoticeTitle}</h2>
           <p>{landing.estimateNoticeBody}</p>
         </aside>

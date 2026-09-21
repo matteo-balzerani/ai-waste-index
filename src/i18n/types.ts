@@ -30,6 +30,29 @@ export interface Dictionary {
       screenshot: InputModeCopy;
     };
   };
+  analysis: {
+    submit: string;
+    pending: string;
+    cancel: string;
+    newAnalysis: string;
+    textLimit: string;
+    unavailableMode: string;
+    resultTitle: string;
+    scoreLabel: string;
+    classLabel: string;
+    estimatesTitle: string;
+    estimatedValue: string;
+    estimatedRange: string;
+    energy: string;
+    carbon: string;
+    water: string;
+    methodologyTitle: string;
+    methodologyBody: string;
+    methodologyVersion: string;
+    disclaimer: string;
+    demoNotice: string;
+    privacy: string;
+  };
   apiMessages: Record<ApiMessageCode, string>;
 }
 

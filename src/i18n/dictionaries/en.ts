@@ -59,6 +59,34 @@ export const en = {
       },
     },
   },
+  analysis: {
+    submit: "Analyse text",
+    pending: "Analysing…",
+    cancel: "Cancel",
+    newAnalysis: "Start a new analysis",
+    textLimit: "Maximum characters",
+    unavailableMode:
+      "This input mode will be available in a later step of the local demo.",
+    resultTitle: "Your result",
+    scoreLabel: "AI Waste Score",
+    classLabel: "Class",
+    estimatesTitle: "Derived environmental estimates",
+    estimatedValue: "Estimated value",
+    estimatedRange: "Estimated range",
+    energy: "Energy",
+    carbon: "CO2e",
+    water: "Water",
+    methodologyTitle: "What this estimates",
+    methodologyBody:
+      "The score estimates avoidable compute associated with producing the visible content. The model may consider generation, retries and refinements. Energy, carbon and water estimates derive from compute assumptions; they do not determine the score. Assumptions are conventional and cannot be adjusted here. Content quality, truth and value are not assessed.",
+    methodologyVersion: "Methodology version",
+    disclaimer:
+      "Estimated, not measured. Ranges are estimates, not measurement error bars or confidence intervals.",
+    demoNotice:
+      "Local demonstration: these are test values, not real estimates. The scoring methodology is not yet available.",
+    privacy:
+      "This result exists only on this page. Refreshing, changing language or leaving the page discards it.",
+  },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Review and confirm the extracted text before analysis.",

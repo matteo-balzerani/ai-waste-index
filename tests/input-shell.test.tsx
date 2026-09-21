@@ -13,7 +13,14 @@ describe("analysis input shell", () => {
     "renders all localized %s input modes with an accessible default panel",
     (locale) => {
       const copy = getDictionary(locale).inputShell;
-      render(<AnalysisInput copy={copy} />);
+      render(
+        <AnalysisInput
+          copy={copy}
+          dictionary={getDictionary(locale)}
+          locale={locale}
+          maxTextCodePoints={50000}
+        />,
+      );
 
       expect(
         screen.getByRole("heading", { name: copy.title }),
@@ -39,7 +46,14 @@ describe("analysis input shell", () => {
 
   it("supports arrow, Home and End keyboard navigation", () => {
     const copy = getDictionary("en").inputShell;
-    render(<AnalysisInput copy={copy} />);
+    render(
+      <AnalysisInput
+        copy={copy}
+        dictionary={getDictionary("en")}
+        locale="en"
+        maxTextCodePoints={50000}
+      />,
+    );
 
     const textTab = screen.getByRole("tab", {
       name: copy.modes.text.tabLabel,
@@ -70,16 +84,21 @@ describe("analysis input shell", () => {
 
   it("discards text, URL and selected files when the input mode changes", () => {
     const copy = getDictionary("en").inputShell;
-    render(<AnalysisInput copy={copy} />);
+    render(
+      <AnalysisInput
+        copy={copy}
+        dictionary={getDictionary("en")}
+        locale="en"
+        maxTextCodePoints={50000}
+      />,
+    );
 
     const textInput = screen.getByRole("textbox", {
       name: copy.modes.text.fieldLabel,
     });
     fireEvent.change(textInput, { target: { value: "temporary text" } });
 
-    fireEvent.click(
-      screen.getByRole("tab", { name: copy.modes.url.tabLabel }),
-    );
+    fireEvent.click(screen.getByRole("tab", { name: copy.modes.url.tabLabel }));
     const urlInput = screen.getByRole("textbox", {
       name: copy.modes.url.fieldLabel,
     });
@@ -122,14 +141,28 @@ describe("analysis input shell", () => {
     const storageWrite = vi.spyOn(Storage.prototype, "setItem");
     const pushState = vi.spyOn(history, "pushState");
     const replaceState = vi.spyOn(history, "replaceState");
-    const firstRender = render(<AnalysisInput copy={copy} />);
+    const firstRender = render(
+      <AnalysisInput
+        copy={copy}
+        dictionary={getDictionary("en")}
+        locale="en"
+        maxTextCodePoints={50000}
+      />,
+    );
 
     fireEvent.change(
       screen.getByRole("textbox", { name: copy.modes.text.fieldLabel }),
       { target: { value: "not persisted" } },
     );
     firstRender.unmount();
-    render(<AnalysisInput copy={copy} />);
+    render(
+      <AnalysisInput
+        copy={copy}
+        dictionary={getDictionary("en")}
+        locale="en"
+        maxTextCodePoints={50000}
+      />,
+    );
 
     expect(
       screen.getByRole("textbox", { name: copy.modes.text.fieldLabel }),
@@ -141,11 +174,16 @@ describe("analysis input shell", () => {
 
   it("discards the active draft on page lifecycle navigation events", () => {
     const copy = getDictionary("en").inputShell;
-    render(<AnalysisInput copy={copy} />);
-
-    fireEvent.click(
-      screen.getByRole("tab", { name: copy.modes.url.tabLabel }),
+    render(
+      <AnalysisInput
+        copy={copy}
+        dictionary={getDictionary("en")}
+        locale="en"
+        maxTextCodePoints={50000}
+      />,
     );
+
+    fireEvent.click(screen.getByRole("tab", { name: copy.modes.url.tabLabel }));
     const urlInput = screen.getByRole("textbox", {
       name: copy.modes.url.fieldLabel,
     });

@@ -335,3 +335,119 @@ a {
     min-height: 0;
   }
 }
+
+.analysis-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.primary-action,
+.secondary-action {
+  padding: 0.85rem 1.25rem;
+  border: 1px solid var(--accent);
+  border-radius: 0.75rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.primary-action {
+  background: var(--accent);
+  color: var(--surface);
+}
+.secondary-action {
+  background: var(--surface);
+  color: var(--accent);
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.primary-action:focus-visible,
+.secondary-action:focus-visible,
+#result-title:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.analysis-result {
+  display: grid;
+  gap: 1.5rem;
+}
+.analysis-result h2 {
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  margin: 0;
+  letter-spacing: -0.04em;
+}
+.analysis-result h3,
+.metric h4 {
+  margin: 0;
+}
+.analysis-result > button {
+  justify-self: start;
+}
+.score-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+.score-summary p {
+  margin: 0;
+}
+.score-value {
+  font-size: clamp(4rem, 12vw, 7rem);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+.score-value span {
+  font-size: 1.5rem;
+  color: var(--muted);
+  letter-spacing: normal;
+}
+.class-badge {
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
+.class-badge strong {
+  display: block;
+  font-size: 3rem;
+}
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.metric {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
+.metric p {
+  line-height: 1.6;
+  color: var(--muted);
+}
+.metric strong {
+  font-size: 1.5rem;
+  color: var(--foreground);
+}
+.demo-notice {
+  padding: 1rem;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0.75rem;
+}
+.methodology-copy {
+  max-width: 48rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+[role="alert"] {
+  border-left: 3px solid currentColor;
+  padding-left: 1rem;
+}
+@media (max-width: 42rem) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+}

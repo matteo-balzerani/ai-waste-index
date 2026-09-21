@@ -9,7 +9,13 @@ describe("public application foundation", () => {
     "renders the %s landing content from its dictionary",
     (locale) => {
       const dictionary = getDictionary(locale);
-      render(<Landing dictionary={dictionary} locale={locale} />);
+      render(
+        <Landing
+          dictionary={dictionary}
+          locale={locale}
+          maxTextCodePoints={50000}
+        />,
+      );
 
       expect(
         screen.getByRole("heading", { name: dictionary.landing.title }),

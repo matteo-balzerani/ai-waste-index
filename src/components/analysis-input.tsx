@@ -1,6 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type FormEvent,
+} from "react";
+
+import {
+  createAnalysisTextSchema,
+  publicResultSchema,
+  publicErrorResponseSchema,
+  analyzeErrorResponseSchemas,
+  type PublicResult,
+  type PublicErrorCode,
+} from "@/contracts";
+import type { Locale } from "@/i18n/config";
+import { AnalysisResult } from "./analysis-result";
 
 import type { Dictionary } from "@/i18n/types";
 
@@ -9,15 +26,34 @@ type InputMode = (typeof inputModes)[number];
 
 interface AnalysisInputProps {
   copy: Dictionary["inputShell"];
+  dictionary: Dictionary;
+  locale: Locale;
+  maxTextCodePoints: number | null;
 }
 
-export function AnalysisInput({ copy }: AnalysisInputProps) {
+export function AnalysisInput({
+  copy,
+  dictionary,
+  locale,
+  maxTextCodePoints,
+}: AnalysisInputProps) {
   const [activeMode, setActiveMode] = useState<InputMode>("text");
   const [draft, setDraft] = useState("");
+  const [result, setResult] = useState<PublicResult | null>(null);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<PublicErrorCode | null>(null);
+  const activeRequest = useRef<AbortController | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
     const discardDraft = () => {
+      activeRequest.current?.abort();
+      activeRequest.current = null;
+      setPending(false);
+      setResult(null);
+      setError(null);
+      if (fileRef.current) fileRef.current.value = "";
       setDraft("");
       setActiveMode("text");
     };
@@ -26,6 +62,8 @@ export function AnalysisInput({ copy }: AnalysisInputProps) {
     window.addEventListener("pageshow", discardDraft);
 
     return () => {
+      activeRequest.current?.abort();
+      activeRequest.current = null;
       window.removeEventListener("pagehide", discardDraft);
       window.removeEventListener("pageshow", discardDraft);
     };
@@ -33,6 +71,10 @@ export function AnalysisInput({ copy }: AnalysisInputProps) {
 
   const selectMode = (mode: InputMode) => {
     if (mode !== activeMode) {
+      activeRequest.current?.abort();
+      activeRequest.current = null;
+      setPending(false);
+      setError(null);
       setDraft("");
       setActiveMode(mode);
     }
@@ -66,6 +108,88 @@ export function AnalysisInput({ copy }: AnalysisInputProps) {
     selectMode(nextMode);
     tabRefs.current[nextIndex]?.focus();
   };
+
+  const reset = () => {
+    activeRequest.current?.abort();
+    activeRequest.current = null;
+    setPending(false);
+    setResult(null);
+    setError(null);
+    setDraft("");
+    setActiveMode("text");
+  };
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (activeRequest.current || activeMode !== "text") return;
+    if (maxTextCodePoints === null) {
+      setError("INTERNAL_ERROR");
+      return;
+    }
+    if (!createAnalysisTextSchema(maxTextCodePoints).safeParse(draft).success) {
+      setError(
+        [...draft].length > maxTextCodePoints
+          ? "INPUT_TOO_LARGE"
+          : "INVALID_INPUT",
+      );
+      return;
+    }
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    setPending(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sourceType: "text", text: draft, locale }),
+        cache: "no-store",
+        credentials: "omit",
+        signal: controller.signal,
+      });
+      const body: unknown = await response.json();
+      if (activeRequest.current !== controller || controller.signal.aborted)
+        return;
+      if (response.status !== 200) {
+        const schema =
+          analyzeErrorResponseSchemas[
+            response.status as keyof typeof analyzeErrorResponseSchemas
+          ];
+        const parsed = publicErrorResponseSchema.safeParse(body);
+        setError(
+          schema?.safeParse(body).success && parsed.success
+            ? parsed.data.error.code
+            : "INTERNAL_ERROR",
+        );
+        return;
+      }
+      const parsed = publicResultSchema.safeParse(body);
+      if (!parsed.success) {
+        setError("INTERNAL_ERROR");
+        return;
+      }
+      setDraft("");
+      setResult(parsed.data);
+    } catch {
+      if (activeRequest.current === controller && !controller.signal.aborted)
+        setError("INTERNAL_ERROR");
+    } finally {
+      if (activeRequest.current === controller) {
+        activeRequest.current = null;
+        setPending(false);
+      }
+    }
+  };
+
+  if (result)
+    return (
+      <AnalysisResult
+        result={result}
+        locale={locale}
+        copy={dictionary.analysis}
+        onReset={reset}
+      />
+    );
 
   const activeCopy = copy.modes[activeMode];
   const hintId = `input-${activeMode}-hint`;
@@ -131,6 +255,8 @@ export function AnalysisInput({ copy }: AnalysisInputProps) {
               autoComplete="off"
               id="input-text"
               onChange={(event) => setDraft(event.currentTarget.value)}
+              readOnly={pending}
+              spellCheck={false}
               rows={8}
               value={draft}
             />
@@ -152,6 +278,7 @@ export function AnalysisInput({ copy }: AnalysisInputProps) {
             <input
               aria-describedby={hintId}
               id="input-screenshot"
+              ref={fileRef}
               type="file"
             />
           )}
@@ -161,6 +288,43 @@ export function AnalysisInput({ copy }: AnalysisInputProps) {
           </p>
         </div>
       </div>
+
+      {activeMode === "text" ? (
+        <form onSubmit={submit} aria-busy={pending}>
+          {maxTextCodePoints !== null && (
+            <p className="input-hint">
+              {dictionary.analysis.textLimit}:{" "}
+              {new Intl.NumberFormat(locale).format(maxTextCodePoints)}
+            </p>
+          )}
+          <div className="analysis-actions">
+            <button
+              className="primary-action"
+              type="submit"
+              disabled={pending || maxTextCodePoints === null}
+            >
+              {dictionary.analysis.submit}
+            </button>
+            {pending && (
+              <button
+                className="secondary-action"
+                type="button"
+                onClick={reset}
+              >
+                {dictionary.analysis.cancel}
+              </button>
+            )}
+          </div>
+          {pending && <p role="status">{dictionary.analysis.pending}</p>}
+          {(error || maxTextCodePoints === null) && (
+            <p role="alert">
+              {dictionary.apiMessages[error ?? "INTERNAL_ERROR"]}
+            </p>
+          )}
+        </form>
+      ) : (
+        <p className="input-hint">{dictionary.analysis.unavailableMode}</p>
+      )}
 
       <p className="privacy-notice">{copy.privacyNotice}</p>
     </section>
