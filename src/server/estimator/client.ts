@@ -215,6 +215,9 @@ export function createEstimatorClient(
             ...validatedInput,
           }),
           cache: "no-store",
+          // Never forward confirmed text or the service credential to a Location
+          // destination, including a different path on the configured origin.
+          redirect: "error",
           signal: controller.signal,
         });
 

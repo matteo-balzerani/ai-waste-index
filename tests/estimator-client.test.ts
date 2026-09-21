@@ -1,5 +1,8 @@
 // @vitest-environment node
 
+import { randomBytes } from "node:crypto";
+import { createServer, type Server } from "node:http";
+import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { AnalyzeRequest } from "@/contracts";
@@ -66,6 +69,61 @@ afterEach(() => {
 });
 
 describe("server-only estimator client", () => {
+  it.each(
+    [301, 302, 303, 307, 308].flatMap((status) =>
+      [false, true].map((crossOrigin) => ({ status, crossOrigin })),
+    ),
+  )("rejects HTTP $status redirects (cross-origin: $crossOrigin) without a second request", async ({ status, crossOrigin }) => {
+    let initialRequests = 0;
+    let redirectedRequests = 0;
+    const destination = createServer((incoming, response) => {
+      redirectedRequests++;
+      incoming.resume();
+      response.writeHead(500, requiredHeaders).end("{}");
+    });
+    const listen = async (server: Server) => {
+      await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+      return `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    };
+    const close = async (server: Server) => {
+      server.closeAllConnections();
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+    };
+    const destinationUrl = await listen(destination);
+    const source = createServer((incoming, response) => {
+      incoming.resume();
+      if (incoming.url !== "/internal/v1/estimate") {
+        redirectedRequests++;
+        response.writeHead(500, requiredHeaders).end("{}");
+        return;
+      }
+      initialRequests++;
+      response.writeHead(status, {
+        Location: crossOrigin ? `${destinationUrl}/redirected` : "/redirected",
+      }).end();
+    });
+    try {
+      const baseUrl = await listen(source);
+      const client = createEstimatorClient({
+        ...config,
+        baseUrl,
+        apiKey: randomBytes(32).toString("hex"),
+      });
+      await expect(client.estimate(request)).rejects.toMatchObject(
+        expectClientError("ESTIMATOR_UNAVAILABLE", 503),
+      );
+      expect(initialRequests).toBe(1);
+      // Inspect actual HTTP arrivals, not mocked fetch calls: neither text nor
+      // credentials may be sent to a redirected destination, even on this origin.
+      expect(redirectedRequests).toBe(0);
+    } finally {
+      await close(source);
+      await close(destination);
+    }
+  });
+
   it("sends one authenticated no-store request and returns only the public result", async () => {
     const calls: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
     const fetchImplementation: typeof fetch = async (input, init) => {

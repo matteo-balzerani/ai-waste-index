@@ -85,6 +85,12 @@ success or error response before returning public result fields. The client make
 fallback, applies one total timeout, bounds streamed response bytes before buffering, propagates cancellation,
 requires the contract's no-store headers and maps upstream failures to safe public codes.
 
+Authenticated estimator requests reject all HTTP redirects, including same-origin redirects, with
+`ESTIMATOR_UNAVAILABLE`. No redirected destination receives the request text or service credential.
+Both API paths also set no-store headers at the Next.js configuration boundary, covering framework-generated
+responses as well as the POST handlers. `e2e/api-headers.spec.ts` checks all seven supported HTTP methods
+against a running application and can also run against a production build via `E2E_BASE_URL`.
+
 Copy `.env.example` to a local ignored environment file and replace its deliberately invalid placeholder key.
 Estimator settings are mandatory positive/valid values: `ESTIMATOR_BASE_URL`, `ESTIMATOR_API_KEY`,
 `ESTIMATOR_TIMEOUT_MS`, `MAX_ESTIMATOR_RESPONSE_BYTES` and `MAX_ANALYSIS_TEXT_CHARS`. Never expose them through
