@@ -3,11 +3,14 @@ import type { Dictionary } from "@/i18n/types";
 
 import { AnalysisInput } from "./analysis-input";
 
+import type { OcrLimits } from "@/browser/ocr/types";
+
 interface LandingProps {
   dictionary: Dictionary;
   locale: Locale;
   maxTextCodePoints: number | null;
   maxUrlChars?: number | null;
+  ocrLimits?: OcrLimits | null;
 }
 
 export function Landing({
@@ -15,6 +18,7 @@ export function Landing({
   locale,
   maxTextCodePoints,
   maxUrlChars,
+  ocrLimits,
 }: LandingProps) {
   const { landing, navigation } = dictionary;
 
@@ -53,6 +57,7 @@ export function Landing({
           locale={locale}
           maxTextCodePoints={maxTextCodePoints}
           maxUrlChars={maxUrlChars}
+          ocrLimits={ocrLimits}
         />
 
         <aside

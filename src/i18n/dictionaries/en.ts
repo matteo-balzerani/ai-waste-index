@@ -99,6 +99,18 @@ export const en = {
     availability:
       "Use a public HTML or text page. Pages that require sign-in or JavaScript may not be readable. You can paste the text directly instead.",
   },
+  ocr: {
+    pending: "Reading text in your browser…",
+    changeImage: "Choose another screenshot",
+    formats:
+      "Choose a static PNG or JPEG. Text is read in Italian and English, entirely in your browser.",
+    limits:
+      "Limits: {bytes} MB, {width} × {height} pixels per side, {pixels} megapixels in total.",
+    failed:
+      "The image could not be read. Try a clearer PNG or JPEG, or paste the text directly.",
+    timeout:
+      "Reading the image took too long and was stopped. Try a smaller screenshot or paste the text directly.",
+  },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Review and confirm the extracted text before analysis.",

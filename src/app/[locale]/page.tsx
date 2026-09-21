@@ -8,6 +8,9 @@ import { loadInputLimits } from "@/server/analysis/config";
 
 import { loadExtractionConfig } from "@/server/extraction/config";
 
+import { loadOcrLimits } from "@/server/ocr-config";
+import type { OcrLimits } from "@/browser/ocr/types";
+
 export const dynamic = "force-dynamic";
 
 interface LocalePageProps {
@@ -33,12 +36,19 @@ export default async function LocalePage({ params }: LocalePageProps) {
   } catch {
     /* Safe unavailable state. */
   }
+  let ocrLimits: OcrLimits | null = null;
+  try {
+    ocrLimits = loadOcrLimits();
+  } catch {
+    /* Safe unavailable state. */
+  }
   return (
     <Landing
       dictionary={getDictionary(locale)}
       locale={locale}
       maxTextCodePoints={maxTextCodePoints}
       maxUrlChars={maxUrlChars}
+      ocrLimits={ocrLimits}
     />
   );
 }

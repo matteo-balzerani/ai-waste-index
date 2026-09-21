@@ -64,6 +64,14 @@ export interface Dictionary {
     urlLimit: string;
     availability: string;
   };
+  ocr: {
+    pending: string;
+    changeImage: string;
+    formats: string;
+    limits: string;
+    failed: string;
+    timeout: string;
+  };
   apiMessages: Record<ApiMessageCode, string>;
 }
 

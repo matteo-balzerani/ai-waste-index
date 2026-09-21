@@ -22,6 +22,10 @@ import {
 import type { Locale } from "@/i18n/config";
 import { AnalysisResult } from "./analysis-result";
 
+import { recognizeScreenshot } from "@/browser/ocr/client";
+import { screenshotMimeTypes } from "@/browser/ocr/image";
+import { OcrError, type OcrLimits } from "@/browser/ocr/types";
+
 import type { Dictionary } from "@/i18n/types";
 
 const inputModes = ["text", "url", "screenshot"] as const;
@@ -33,6 +37,7 @@ interface AnalysisInputProps {
   locale: Locale;
   maxTextCodePoints: number | null;
   maxUrlChars?: number | null;
+  ocrLimits?: OcrLimits | null;
 }
 
 export function AnalysisInput({
@@ -41,12 +46,16 @@ export function AnalysisInput({
   locale,
   maxTextCodePoints,
   maxUrlChars = null,
+  ocrLimits = null,
 }: AnalysisInputProps) {
   const [activeMode, setActiveMode] = useState<InputMode>("text");
   const [draft, setDraft] = useState("");
   const [result, setResult] = useState<PublicResult | null>(null);
-  const [pending, setPending] = useState<"analyze" | "extract" | null>(null);
+  const [pending, setPending] = useState<"analyze" | "extract" | "ocr" | null>(
+    null,
+  );
   const [preview, setPreview] = useState<string | null>(null);
+  const [ocrProgress, setOcrProgress] = useState<number | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const previewHeading = useRef<HTMLHeadingElement>(null);
   const [error, setError] = useState<PublicErrorCode | null>(null);
@@ -142,8 +151,7 @@ export function AnalysisInput({
     event.preventDefault();
     if (
       activeRequest.current ||
-      (activeMode !== "text" &&
-        !(activeMode === "url" && preview !== null && confirmed))
+      (activeMode !== "text" && !(preview !== null && confirmed))
     )
       return;
     const text = preview ?? draft;
@@ -168,7 +176,7 @@ export function AnalysisInput({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sourceType: activeMode === "url" ? "url" : "text",
+          sourceType: activeMode,
           text,
           locale,
         }),
@@ -278,6 +286,48 @@ export function AnalysisInput({
     }
   };
 
+  const extractScreenshot = async (file: File) => {
+    activeRequest.current?.abort();
+    activeRequest.current = null;
+    setError(null);
+    setPreview(null);
+    setConfirmed(false);
+    setOcrProgress(null);
+    if (!ocrLimits || maxTextCodePoints === null) {
+      setError("INTERNAL_ERROR");
+      return;
+    }
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    setPending("ocr");
+    try {
+      const text = await recognizeScreenshot(file, {
+        limits: ocrLimits,
+        maxTextCodePoints,
+        signal: controller.signal,
+        onProgress: (value) => {
+          if (
+            activeRequest.current === controller &&
+            !controller.signal.aborted
+          )
+            setOcrProgress(value);
+        },
+      });
+      if (activeRequest.current === controller && !controller.signal.aborted)
+        setPreview(text);
+    } catch (failure) {
+      if (activeRequest.current === controller && !controller.signal.aborted)
+        setError(
+          failure instanceof OcrError ? failure.code : "EXTRACTION_FAILED",
+        );
+    } finally {
+      if (activeRequest.current === controller) {
+        activeRequest.current = null;
+        setPending(null);
+      }
+    }
+  };
+
   if (result)
     return (
       <AnalysisResult
@@ -339,12 +389,14 @@ export function AnalysisInput({
               type="button"
               onClick={() => {
                 reset();
-                setActiveMode("url");
+                setActiveMode(activeMode);
               }}
             >
               {pending
                 ? dictionary.analysis.cancel
-                : dictionary.extraction.changeUrl}
+                : activeMode === "screenshot"
+                  ? dictionary.ocr.changeImage
+                  : dictionary.extraction.changeUrl}
             </button>
           </div>
           {pending && <p role="status">{dictionary.analysis.pending}</p>}
@@ -442,6 +494,13 @@ export function AnalysisInput({
             <input
               aria-describedby={hintId}
               id="input-screenshot"
+              accept={screenshotMimeTypes.join(",")}
+              disabled={!ocrLimits || maxTextCodePoints === null}
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0];
+                event.currentTarget.value = "";
+                if (file) void extractScreenshot(file);
+              }}
               ref={fileRef}
               type="file"
             />
@@ -528,7 +587,63 @@ export function AnalysisInput({
           )}
         </form>
       ) : (
-        <p className="input-hint">{dictionary.analysis.unavailableMode}</p>
+        <div aria-busy={pending === "ocr"}>
+          <p className="input-hint">{dictionary.ocr.formats}</p>
+          {ocrLimits && (
+            <p className="input-hint">
+              {dictionary.ocr.limits
+                .replace(
+                  "{bytes}",
+                  new Intl.NumberFormat(locale).format(
+                    ocrLimits.maxBytes / 1_000_000,
+                  ),
+                )
+                .replace(
+                  "{width}",
+                  new Intl.NumberFormat(locale).format(ocrLimits.maxWidth),
+                )
+                .replace(
+                  "{height}",
+                  new Intl.NumberFormat(locale).format(ocrLimits.maxHeight),
+                )
+                .replace(
+                  "{pixels}",
+                  new Intl.NumberFormat(locale).format(
+                    ocrLimits.maxPixels / 1_000_000,
+                  ),
+                )}
+            </p>
+          )}
+          {pending === "ocr" && (
+            <>
+              <p role="status">{dictionary.ocr.pending}</p>
+              <progress
+                aria-label={dictionary.ocr.pending}
+                max={1}
+                value={ocrProgress ?? undefined}
+              />
+              <button
+                className="secondary-action"
+                type="button"
+                onClick={() => {
+                  reset();
+                  setActiveMode("screenshot");
+                }}
+              >
+                {dictionary.analysis.cancel}
+              </button>
+            </>
+          )}
+          {(error || !ocrLimits || maxTextCodePoints === null) && (
+            <p role="alert">
+              {error === "EXTRACTION_FAILED"
+                ? dictionary.ocr.failed
+                : error === "REQUEST_TIMEOUT"
+                  ? dictionary.ocr.timeout
+                  : dictionary.apiMessages[error ?? "INTERNAL_ERROR"]}
+            </p>
+          )}
+        </div>
       )}
 
       <p className="privacy-notice">{copy.privacyNotice}</p>

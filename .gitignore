@@ -48,3 +48,6 @@ next-env.d.ts
 # Bundled server-only parser worker.
 /.generated/
 /.next-check/
+
+# Reproducible browser OCR assets built from pinned npm packages.
+/public/ocr/

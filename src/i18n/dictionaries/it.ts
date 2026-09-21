@@ -99,6 +99,18 @@ export const it = {
     availability:
       "Usa una pagina pubblica HTML o di testo. Le pagine che richiedono accesso o JavaScript potrebbero non essere leggibili. In alternativa puoi incollare direttamente il testo.",
   },
+  ocr: {
+    pending: "Lettura del testo nel browser…",
+    changeImage: "Scegli un altro screenshot",
+    formats:
+      "Scegli un PNG o JPEG statico. Il testo viene letto in italiano e inglese, interamente nel browser.",
+    limits:
+      "Limiti: {bytes} MB, {width} × {height} pixel per lato, {pixels} megapixel totali.",
+    failed:
+      "Non è stato possibile leggere l’immagine. Prova un PNG o JPEG più nitido oppure incolla direttamente il testo.",
+    timeout:
+      "La lettura dell’immagine ha richiesto troppo tempo ed è stata interrotta. Prova uno screenshot più piccolo oppure incolla direttamente il testo.",
+  },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Controlla e conferma il testo estratto prima dell’analisi.",

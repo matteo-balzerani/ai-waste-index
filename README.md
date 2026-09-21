@@ -5,9 +5,10 @@ does not judge content quality, usefulness, truth or value.
 
 ## Status
 
-The local Text and URL flows are implemented. Paste text, or extract a public page and explicitly confirm
-its editable preview, then analyse through the authenticated estimator service and view score, class, ranges
-and methodology disclosure in IT/EN. Screenshot remains an input shell until its OCR step. Quota infrastructure is deferred until deployment is selected; this
+The local Text, URL and Screenshot flows are implemented. Paste text, extract a public page, or read a
+screenshot in the browser. Extracted text always requires explicit confirmation of its editable preview.
+Analysis uses the authenticated estimator service and displays score, class, ranges and methodology disclosure
+in IT/EN. Quota infrastructure is deferred until deployment is selected; this
 version is for loopback-only local demonstration, not production.
 
 The repository must not contain scoring logic, estimator fallbacks, proprietary methodology, secrets, user-content
@@ -73,8 +74,8 @@ the estimator. Methodology versions beginning with `stub-` visibly identify demo
 language navigation, back/forward restoration and starting again discard the result.
 
 URL extraction always produces an editable review step; editing its text revokes confirmation. Only the
-confirmed text and `sourceType: "url"` reach analysis, never the original URL. Browser OCR and sharing remain
-later steps; the screenshot control does not upload or process files.
+confirmed text and `sourceType: "url"` reach analysis, never the original URL. Screenshot extraction uses
+the same mandatory review flow with `sourceType: "screenshot"`. Sharing remains a later step.
 
 ## Estimator client
 
@@ -89,7 +90,7 @@ Estimator settings are mandatory positive/valid values: `ESTIMATOR_BASE_URL`, `E
 `ESTIMATOR_TIMEOUT_MS`, `MAX_ESTIMATOR_RESPONSE_BYTES` and `MAX_ANALYSIS_TEXT_CHARS`. Never expose them through
 `NEXT_PUBLIC_*`. No estimator call occurs during page rendering or build.
 
-## Running the local text demo
+## Running the local demo
 
 Start an independently configured local estimator service on `127.0.0.1:8787`, with a matching credential and
 `MAX_ANALYSIS_TEXT_CHARS=50000`. Its raw JSON limit must accommodate escaped text plus the request envelope;
@@ -144,12 +145,48 @@ or paid inference fallback is used.
 Next directly, build the worker first. `LOCAL_VERIFICATION_BUILD=1` selects `.next-check` to keep test/build
 artifacts separate from an active local development server.
 
+## Browser-local screenshot OCR
+
+Selecting a static PNG or baseline/progressive JPEG starts browser-only OCR. The file input is immediately
+cleared; the image is never placed in application state, uploaded, logged or persisted. MIME, byte size and
+actual format must agree. A bounded header parser checks width, height and total pixels before full decoding;
+animated PNG, SVG, GIF, WebP and unsupported JPEG variants are rejected. A decoded bitmap is checked and
+closed before recognition. An unreadable image can be replaced or its text pasted directly.
+
+`MAX_SCREENSHOT_BYTES`, `MAX_SCREENSHOT_PIXELS`, `MAX_SCREENSHOT_WIDTH`, `MAX_SCREENSHOT_HEIGHT` and
+`OCR_TIMEOUT_MS` are mandatory positive integer server settings, projected to the UI as public operational
+limits only. The example allows 10 MB, 16 megapixels, at most 16,000 pixels on either side and 30 seconds
+including validation, decode, engine/data loading and recognition. Missing/invalid configuration disables
+Screenshot only. The existing analysis text limit also applies; excessive OCR text is rejected, never truncated.
+
+One dedicated worker owns the entire operation, including synchronous WASM work. Cancellation, replacement,
+navigation, unmount, success, failure and the total deadline terminate it. No nested workers or object URLs
+are created. Progress is accessible and localized; every successful extraction still requires editable review
+and explicit confirmation, revoked on edits. There is no confidence gate. Only confirmed text and source/locale
+metadata reach `/api/analyze`.
+
+Tesseract.js 7.0.0 and pinned Italian/English trained data run locally with both languages enabled regardless
+of UI locale. `scripts/build-ocr.mjs` builds the worker and copies the WASM wrapper and language assets from
+installed npm dependencies into ignored `public/ocr/`; `predev`, `prebuild` and `pretest` run it automatically.
+If invoking Next directly, run both `npm run build:worker` and `npm run build:ocr` first. Serve/copy `public/`
+with a deployed build as required by Next. No runtime CDN, OCR service, service worker or IndexedDB cache is
+used. Only static engine/language assets may use the browser HTTP cache; no content/result cache exists.
+
+The worker uses the version-pinned upstream dispatcher and browser adapters directly so the application owns
+a terminable Worker even during initialization. It supplies the same Buffer polyfill as the upstream browser
+bundle and disables language persistence (`cacheMethod: "none"`, no storage adapter). Third-party diagnostics
+are suppressed; only safe errors and plain extracted text leave the worker. Dependency upgrades must rerun
+the real browser OCR, cancellation, deadline and no-upload/no-storage tests to verify this integration.
+
 ## Browser tests
 
 Install Chromium with `npx playwright install chromium`. With the local app and estimator running, execute
 `npm run test:e2e` (or set `E2E_BASE_URL` for another loopback port). Tests cover real text submissions in both locales, estimate display, error/cancellation states and result
 loss on refresh/language/back-forward navigation. URL browser tests use a stable extraction fixture for
 review/edit/confirmation, call the real local estimator after confirmation, and exercise live loopback rejection.
+Screenshot browser tests generate synthetic PNG/JPEG images in memory, run the real OCR in both locales,
+inspect requests (only confirmed text is POSTed), verify empty browser storage and exercise native worker
+termination on cancellation/deadline plus invalid-format/pixel-bomb rejection before engine loading.
 The server integration suite uses real HTTP sockets mapped to isolated test servers to test fetching, redirects,
 DNS pinning, bounds, actual worker parsing and cancellation without depending on internet availability. The
 production route has no dependency-injection or address-bypass setting exposed to requests/configuration. They use synthetic content and do not record screenshots, video or traces. Unit/integration tests
