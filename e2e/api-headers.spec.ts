@@ -12,6 +12,14 @@ for (const path of ["/api/analyze", "/api/extract-url"]) {
       });
       expect(response.headers()["cache-control"], method).toBe("no-store, max-age=0");
       expect(response.headers().pragma, method).toBe("no-cache");
+      if (method !== "POST") {
+        expect(response.status(), method).toBe(method === "OPTIONS" ? 204 : 405);
+        expect((await response.body()).byteLength, method).toBe(0);
+        if (method === "OPTIONS") {
+          expect(response.headers().allow?.split(",").map((value) => value.trim()).sort())
+            .toEqual(["OPTIONS", "POST"]);
+        }
+      }
       await response.dispose();
     }
   });

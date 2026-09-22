@@ -91,6 +91,11 @@ Both API paths also set no-store headers at the Next.js configuration boundary, 
 responses as well as the POST handlers. `e2e/api-headers.spec.ts` checks all seven supported HTTP methods
 against a running application and can also run against a production build via `E2E_BASE_URL`.
 
+These web APIs serve the product frontend only. POST is the application operation; GET, HEAD, PUT, PATCH and
+DELETE return 405 with no body. OPTIONS returns 204 with no body and advertises OPTIONS and POST in Allow.
+The bodyless framework responses use the same no-store headers and introduce no JSON error code. The HTTP
+regression checks their status, empty body and allowed methods as well as cache headers.
+
 Copy `.env.example` to a local ignored environment file and replace its deliberately invalid placeholder key.
 Estimator settings are mandatory positive/valid values: `ESTIMATOR_BASE_URL`, `ESTIMATOR_API_KEY`,
 `ESTIMATOR_TIMEOUT_MS`, `MAX_ESTIMATOR_RESPONSE_BYTES` and `MAX_ANALYSIS_TEXT_CHARS`. Never expose them through
