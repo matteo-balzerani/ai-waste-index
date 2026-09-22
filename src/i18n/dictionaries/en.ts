@@ -4,7 +4,7 @@ export const en = {
   metadata: {
     title: "AI Waste Index",
     description:
-      "Estimate avoidable AI compute and its derived environmental impact.",
+      "Estimate the energy and environmental resource consumption of one AI generation.",
   },
   navigation: {
     languageSelectorLabel: "Choose language",
@@ -13,12 +13,12 @@ export const en = {
   },
   landing: {
     brand: "AI Waste Index",
-    title: "Estimate avoidable AI compute.",
+    title: "Estimate the consumption of one AI generation.",
     description:
-      "Understand the estimated compute associated with producing visible content and its derived energy, carbon and water impact.",
+      "Use the visible text to estimate energy, CO2e and water for one generation in the reference scenario.",
     estimateNoticeTitle: "An estimate, not a judgement",
     estimateNoticeBody:
-      "Results are estimates based on conventional assumptions. They do not measure environmental impact or judge the quality, truth or value of the content.",
+      "Experimental estimates use conventional assumptions. They do not measure the original consumption, detect AI-generated text or judge the value of the content.",
   },
   inputShell: {
     sectionLabel: "01 / Input",
@@ -34,7 +34,7 @@ export const en = {
         tabLabel: "Text",
         title: "Paste text",
         description:
-          "Use the visible content directly. The score estimates avoidable compute, not the content’s value.",
+          "Use the visible text directly. The score represents estimated energy consumption in the reference scenario.",
         fieldLabel: "Content to analyse",
         fieldHint:
           "Direct text does not require an extraction confirmation step.",
@@ -72,18 +72,20 @@ export const en = {
     classLabel: "Class",
     estimatesTitle: "Derived environmental estimates",
     estimatedValue: "Estimated value",
-    estimatedRange: "Estimated range",
+    estimatedRange: "Scenario range",
     energy: "Energy",
     carbon: "CO2e",
     water: "Water",
     methodologyTitle: "What this estimates",
     methodologyBody:
-      "The score estimates avoidable compute associated with producing the visible content. The model may consider generation, retries and refinements. Energy, carbon and water estimates derive from compute assumptions; they do not determine the score. Assumptions are conventional and cannot be adjusted here. Content quality, truth and value are not assessed.",
+      "The score is based on estimated energy in Wh for one generation of the visible text, excluding discarded drafts and revisions. CO2e and water are separate estimates; water includes data-center cooling and electricity generation. Assumptions are conventional and cannot be adjusted here. The result does not measure the original process or establish AI authorship. Content quality, sophistication and usefulness are not assessed.",
     methodologyVersion: "Methodology version",
     disclaimer:
-      "Estimated, not measured. Ranges are estimates, not measurement error bars or confidence intervals.",
+      "Estimated, not measured. Ranges describe variation within the reference scenario, not confidence intervals or total uncertainty.",
+    experimentalNotice: "Experimental estimate: physical accuracy has not yet been verified.",
+    zeroScoreNotice: "A score rounded to zero does not mean zero consumption.",
     demoNotice:
-      "Local demonstration: these are test values, not real estimates. The scoring methodology is not yet available.",
+      "Local demonstration: these are test values, not model estimates.",
     privacy:
       "This result exists only on this page. Refreshing, changing language or leaving the page discards it.",
   },
@@ -115,7 +117,7 @@ export const en = {
     title: "Share this result",
     description:
       "Copy the result or a compact badge, or prepare a card to share yourself.",
-    context: "Estimated avoidable AI compute",
+    context: "Estimated AI generation consumption",
     disclaimer: "Estimated, not measured.",
     copyText: "Copy result text",
     copyBadge: "Copy badge text",
@@ -138,6 +140,7 @@ export const en = {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Review and confirm the extracted text before analysis.",
     INVALID_INPUT: "Check the input and try again.",
+    ESTIMATE_OUT_OF_DOMAIN: "An estimate is not available for this text.",
     INPUT_TOO_LARGE: "The input is too large.",
     REQUEST_TIMEOUT: "The request took too long. Try again.",
     URL_BLOCKED: "This URL cannot be accessed safely.",

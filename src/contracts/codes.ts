@@ -5,6 +5,7 @@ export const extractionWarningCodes = [
 export const publicErrorCodes = [
   "INVALID_INPUT",
   "INPUT_TOO_LARGE",
+  "ESTIMATE_OUT_OF_DOMAIN",
   "REQUEST_TIMEOUT",
   "URL_BLOCKED",
   "URL_FETCH_FAILED",
@@ -26,6 +27,7 @@ export const estimatorErrorCodes = [
   "UNAUTHORIZED",
   "REQUEST_TIMEOUT",
   "TEXT_TOO_LARGE",
+  "ESTIMATE_OUT_OF_DOMAIN",
   "INTERNAL_ERROR",
   "ESTIMATOR_NOT_READY",
 ] as const;
@@ -34,6 +36,7 @@ export const analyzeErrorCodesByStatus = {
   400: ["INVALID_INPUT"],
   408: ["REQUEST_TIMEOUT"],
   413: ["INPUT_TOO_LARGE"],
+  422: ["ESTIMATE_OUT_OF_DOMAIN"],
   429: ["RATE_LIMITED", "GLOBAL_CAP_REACHED"],
   500: ["INTERNAL_ERROR"],
   503: ["GUARD_UNAVAILABLE", "ESTIMATOR_UNAVAILABLE"],
@@ -56,6 +59,7 @@ export const estimatorErrorCodesByStatus = {
   401: ["UNAUTHORIZED"],
   408: ["REQUEST_TIMEOUT"],
   413: ["TEXT_TOO_LARGE"],
+  422: ["ESTIMATE_OUT_OF_DOMAIN"],
   500: ["INTERNAL_ERROR"],
   503: ["ESTIMATOR_NOT_READY"],
 } as const;

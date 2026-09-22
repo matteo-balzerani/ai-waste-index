@@ -52,6 +52,15 @@ async function errorResponse(response: Response, status: number, code: string) {
 afterEach(() => vi.useRealTimers());
 
 describe("local analysis route", () => {
+  it("preserves the estimator domain outcome and cache headers, without retry", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(Response.json(
+      { error: { code: "ESTIMATE_OUT_OF_DOMAIN" } },
+      { status: 422, headers: { "cache-control": "no-store, max-age=0", pragma: "no-cache" } },
+    ));
+    await errorResponse(await createAnalysisHandler({ environment, fetch })(request()), 422, "ESTIMATE_OUT_OF_DOMAIN");
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   it.each(["it", "en"])(
     "calls the estimator exactly once with unchanged %s input and no logging",
     async (locale) => {

@@ -41,6 +41,7 @@ export function drawShareCard(
     model.methodology,
     model.disclaimer,
     ...(model.demoNotice ? [model.demoNotice] : []),
+    ...(model.experimentalNotice ? [model.experimentalNotice] : []),
   ].map((text) => wrap(context, text, WIDTH - PADDING * 2));
   const height =
     420 +

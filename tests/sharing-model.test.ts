@@ -4,6 +4,17 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { sharingFixture } from "./helpers/sharing";
 
 describe("public sharing presentation", () => {
+  it.each(["it", "en"] as const)("includes experimental status and zero-score meaning in every %s share", locale => {
+    const d = getDictionary(locale);
+    const model = createShareModel({ ...sharingFixture, score: 0, methodologyVersion: "experimental-contract-fixture" }, locale, d.analysis, d.sharing, d.landing.brand);
+    expect(model.experimentalNotice).toBe(d.analysis.experimentalNotice);
+    expect(model.demoNotice).toBeNull();
+    for (const text of [model.resultText, model.badgeText]) {
+      expect(text).toContain(d.analysis.experimentalNotice);
+      expect(text).toContain(d.analysis.zeroScoreNotice);
+      expect(text).not.toContain(d.analysis.demoNotice);
+    }
+  });
   it.each(["it", "en"] as const)(
     "preserves returned fields and disclosure in every %s output",
     (locale) => {

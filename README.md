@@ -1,14 +1,16 @@
 # AI Waste Index public application
 
-Public Next.js application for the AI Waste Index MVP. The product evaluates estimated avoidable compute; it
-does not judge content quality, usefulness, truth or value.
+Public Next.js application for the AI Waste Index MVP. The product estimates the consumption of one hypothetical AI generation of the visible text,
+excluding discarded drafts and revisions. It does not judge waste, quality, usefulness or AI authorship.
 
 ## Status
 
 The local Text, URL and Screenshot flows are implemented. Paste text, extract a public page, or read a
 screenshot in the browser. Extracted text always requires explicit confirmation of its editable preview.
-Analysis uses the authenticated estimator service and displays score, class, ranges and methodology disclosure
-in IT/EN. Quota infrastructure is deferred until deployment is selected; this
+Analysis uses the authenticated estimator service and displays score, class, scenario ranges and methodology
+disclosure in IT/EN. The score is based on estimated energy; CO2e and water remain separate. Water includes
+cooling and electricity-production consumption. Experimental results explicitly disclose unverified physical
+accuracy; scenario bounds are not confidence intervals or total uncertainty. Quota infrastructure is deferred until deployment is selected; this
 version is for loopback-only local demonstration, not production.
 
 The repository must not contain scoring logic, estimator fallbacks, proprietary methodology, secrets, user-content
@@ -70,7 +72,9 @@ Direct text submits to `/api/analyze` without intermediate confirmation. The rou
 receipt time, validates Unicode/schema, calls the estimator once, and returns only validated public fields or
 safe error codes with no-store headers. The UI prevents duplicate submissions, cancels abandoned requests,
 and ignores stale completions. Result values and bounds are formatted with `Intl`; class comes directly from
-the estimator. Methodology versions beginning with `stub-` visibly identify demonstration values. Refresh,
+the estimator. Methodology versions beginning with `stub-` visibly identify demonstration values; `experimental-`
+versions identify experimental estimates. A zero rounded score with positive energy is explained in
+results and shares. Positive metrics use up to three significant digits and are not displayed as zero. Refresh,
 language navigation, back/forward restoration and starting again discard the result.
 
 URL extraction always produces an editable review step; editing its text revokes confirmation. Only the
@@ -84,6 +88,9 @@ send only confirmed text plus source/locale metadata, authenticate with `X-Estim
 success or error response before returning public result fields. The client makes one request with no retry or
 fallback, applies one total timeout, bounds streamed response bytes before buffering, propagates cancellation,
 requires the contract's no-store headers and maps upstream failures to safe public codes.
+A valid upstream 422 `ESTIMATE_OUT_OF_DOMAIN` is forwarded unchanged. The UI displays a localized
+estimate-unavailable message, leaves input editable, and creates no result/share or automatic retry.
+Transport size rejection (413) and temporary service unavailability (503) remain distinct.
 
 Authenticated estimator requests reject all HTTP redirects, including same-origin redirects, with
 `ESTIMATOR_UNAVAILABLE`. No redirected destination receives the request text or service credential.
@@ -193,8 +200,9 @@ the real browser OCR, cancellation, deadline and no-upload/no-storage tests to v
 
 The result offers localized **Copy result text**, **Copy badge text** and **Show share card** actions. Result
 text includes all three environmental estimates with their estimated ranges; the compact badge and card show
-brand, estimated-avoidable-compute context, returned score/class, methodology version and an estimate disclaimer.
-Every output from a `stub-*` methodology also includes the demonstration warning. These helpers only format
+brand, estimated-generation-consumption context, returned score/class, methodology version and an estimate disclaimer.
+Every output from a `stub-*` methodology also includes the demonstration warning; `experimental-*`
+outputs carry the experimental accuracy notice in copied text, badges, HTML cards and PNG cards. These helpers only format
 returned fields; they never compute or infer a score, class or metric. Input content, source URLs and screenshot
 bytes are not available to the sharing component.
 

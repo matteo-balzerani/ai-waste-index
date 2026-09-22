@@ -29,7 +29,7 @@ for (const locale of ["it", "en"] as const) {
     await expect(
       page.getByRole("heading", { name: dictionary.analysis.resultTitle }),
     ).toBeFocused();
-    await expect(page.getByText(dictionary.analysis.demoNotice)).toBeVisible();
+    await expect(page.getByText((body.methodologyVersion.startsWith("stub-") ? dictionary.analysis.demoNotice : dictionary.analysis.experimentalNotice))).toBeVisible();
     await expect(
       page.getByText(body.methodologyVersion, { exact: true }),
     ).toBeVisible();
@@ -88,6 +88,22 @@ for (const locale of ["it", "en"] as const) {
     ).toHaveCount(0);
     await page.goForward();
     await expect(page.getByRole("textbox")).toHaveValue("");
+  });
+
+  test(`${locale}: domain rejection has no result or sharing and keeps editable input`, async ({ page }) => {
+    let calls = 0;
+    await page.route("**/api/analyze", route => {
+      calls++;
+      return route.fulfill({ status: 422, contentType: "application/json", body: JSON.stringify({ error: { code: "ESTIMATE_OUT_OF_DOMAIN" } }) });
+    });
+    await page.goto(`/${locale}`);
+    await page.getByRole("textbox").fill("Generic domain-rejection contract example");
+    await page.getByRole("button", { name: dictionary.analysis.submit }).click();
+    await expect(page.locator("main").getByRole("alert")).toHaveText(dictionary.apiMessages.ESTIMATE_OUT_OF_DOMAIN);
+    await expect(page.getByRole("textbox")).toHaveValue("Generic domain-rejection contract example");
+    await expect(page.getByRole("heading", { name: dictionary.analysis.resultTitle })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: dictionary.sharing.copyText })).toHaveCount(0);
+    expect(calls).toBe(1);
   });
 
   test(`${locale}: recover from errors and cancel stale responses`, async ({

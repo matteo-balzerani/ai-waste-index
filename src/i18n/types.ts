@@ -51,6 +51,8 @@ export interface Dictionary {
     methodologyVersion: string;
     disclaimer: string;
     demoNotice: string;
+    experimentalNotice: string;
+    zeroScoreNotice: string;
     privacy: string;
   };
   extraction: {

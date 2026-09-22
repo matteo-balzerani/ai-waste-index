@@ -150,6 +150,9 @@ function mapEstimatorError(status: number, body: unknown): never {
   if (status === 400) {
     throw new EstimatorClientError("INVALID_INPUT", 400);
   }
+  if (status === 422) {
+    throw new EstimatorClientError("ESTIMATE_OUT_OF_DOMAIN", 422);
+  }
   if (status === 413) {
     throw new EstimatorClientError("INPUT_TOO_LARGE", 413);
   }

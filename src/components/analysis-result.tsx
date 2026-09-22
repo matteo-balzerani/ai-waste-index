@@ -43,6 +43,9 @@ export function AnalysisResult({
           {copy.demoNotice}
         </p>
       )}
+      {result.methodologyVersion.startsWith("experimental-") && (
+        <p className="demo-notice" role="note">{copy.experimentalNotice}</p>
+      )}
       <div className="score-summary">
         <div>
           <p>{copy.scoreLabel}</p>
@@ -55,6 +58,9 @@ export function AnalysisResult({
           {copy.classLabel} <strong>{result.class}</strong>
         </p>
       </div>
+      {result.score === 0 && result.estimates.energyWh.value > 0 && (
+        <p role="note">{copy.zeroScoreNotice}</p>
+      )}
       <h3>{copy.estimatesTitle}</h3>
       <div className="metric-grid">
         {metrics.map(({ key, label, unit }) => {

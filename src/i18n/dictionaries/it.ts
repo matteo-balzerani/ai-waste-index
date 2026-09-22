@@ -4,7 +4,7 @@ export const it = {
   metadata: {
     title: "AI Waste Index",
     description:
-      "Stima il calcolo IA evitabile e il suo impatto ambientale derivato.",
+      "Stima il consumo energetico di una generazione IA e i relativi consumi ambientali.",
   },
   navigation: {
     languageSelectorLabel: "Scegli la lingua",
@@ -13,12 +13,12 @@ export const it = {
   },
   landing: {
     brand: "AI Waste Index",
-    title: "Stima il calcolo IA evitabile.",
+    title: "Stima il consumo di una generazione IA.",
     description:
-      "Comprendi il calcolo stimato associato alla produzione di un contenuto visibile e il relativo impatto derivato su energia, carbonio e acqua.",
+      "Parti dal testo visibile per stimare energia, CO2e e acqua di una singola generazione nello scenario di riferimento.",
     estimateNoticeTitle: "Una stima, non un giudizio",
     estimateNoticeBody:
-      "I risultati sono stime basate su assunzioni convenzionali. Non misurano l’impatto ambientale e non giudicano qualità, verità o valore del contenuto.",
+      "Le stime sperimentali usano assunzioni convenzionali. Non misurano il consumo originale, non riconoscono testi generati da IA e non giudicano il valore del contenuto.",
   },
   inputShell: {
     sectionLabel: "01 / Input",
@@ -34,7 +34,7 @@ export const it = {
         tabLabel: "Testo",
         title: "Incolla il testo",
         description:
-          "Usa direttamente il contenuto visibile. Il punteggio stima il calcolo evitabile, non il valore del contenuto.",
+          "Usa direttamente il testo visibile. Il punteggio rappresenta il consumo energetico stimato nello scenario di riferimento.",
         fieldLabel: "Contenuto da analizzare",
         fieldHint:
           "Il testo inserito direttamente non richiede una conferma dell’estrazione.",
@@ -72,18 +72,20 @@ export const it = {
     classLabel: "Classe",
     estimatesTitle: "Stime ambientali derivate",
     estimatedValue: "Valore stimato",
-    estimatedRange: "Intervallo stimato",
+    estimatedRange: "Intervallo dello scenario",
     energy: "Energia",
     carbon: "CO2e",
     water: "Acqua",
     methodologyTitle: "Cosa viene stimato",
     methodologyBody:
-      "Il punteggio stima il calcolo evitabile associato alla produzione del contenuto visibile. Il modello può considerare generazione, tentativi e revisioni. Le stime di energia, carbonio e acqua derivano dalle assunzioni sul calcolo e non determinano il punteggio. Le assunzioni sono convenzionali e non modificabili qui. Qualità, verità e valore del contenuto non vengono valutati.",
+      "Il punteggio si basa sull’energia stimata in Wh per una singola generazione del testo visibile, senza bozze scartate o revisioni. CO2e e acqua sono stime separate; l’acqua comprende raffreddamento dei data center e produzione elettrica. Le assunzioni sono convenzionali e non modificabili qui. Il risultato non misura il processo originale né stabilisce se il testo sia stato generato da IA. Qualità, raffinatezza e utilità del contenuto non vengono valutate.",
     methodologyVersion: "Versione della metodologia",
     disclaimer:
-      "Stime, non misurazioni. Gli intervalli sono stime, non barre di errore di misura o intervalli di confidenza.",
+      "Stime, non misurazioni. Gli intervalli descrivono variazioni nello scenario di riferimento, non intervalli di confidenza o l’incertezza complessiva.",
+    experimentalNotice: "Stima sperimentale: accuratezza fisica non ancora verificata.",
+    zeroScoreNotice: "Un punteggio arrotondato a zero non significa consumo nullo.",
     demoNotice:
-      "Dimostrazione locale: questi sono valori di prova, non stime reali. La metodologia di calcolo non è ancora disponibile.",
+      "Dimostrazione locale: questi sono valori di prova, non stime del modello.",
     privacy:
       "Questo risultato esiste solo in questa pagina. Aggiornare, cambiare lingua o lasciare la pagina lo elimina.",
   },
@@ -115,7 +117,7 @@ export const it = {
     title: "Condividi questo risultato",
     description:
       "Copia il risultato o un badge compatto, oppure prepara una scheda da condividere tu.",
-    context: "Calcolo IA evitabile stimato",
+    context: "Consumo di generazione IA stimato",
     disclaimer: "Valori stimati, non misurati.",
     copyText: "Copia il testo del risultato",
     copyBadge: "Copia il testo del badge",
@@ -138,6 +140,7 @@ export const it = {
     EXTRACTION_CONFIRMATION_REQUIRED:
       "Controlla e conferma il testo estratto prima dell’analisi.",
     INVALID_INPUT: "Controlla i dati inseriti e riprova.",
+    ESTIMATE_OUT_OF_DOMAIN: "Stima non disponibile per questo testo.",
     INPUT_TOO_LARGE: "Il contenuto inserito è troppo grande.",
     REQUEST_TIMEOUT: "La richiesta ha impiegato troppo tempo. Riprova.",
     URL_BLOCKED: "Questo URL non può essere raggiunto in sicurezza.",

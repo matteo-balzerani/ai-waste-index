@@ -32,7 +32,7 @@ for (const locale of ["it", "en"] as const) {
     const text = await page.evaluate(() => navigator.clipboard.readText());
     expect(text).toContain(body.methodologyVersion);
     expect(text).toContain(d.sharing.disclaimer);
-    expect(text).toContain(d.analysis.demoNotice);
+    expect(text).toContain((body.methodologyVersion.startsWith("stub-") ? d.analysis.demoNotice : d.analysis.experimentalNotice));
     expect(text).toContain(`${body.score}/100`);
     expect(text).toContain(`${d.analysis.classLabel} ${body.class}`);
     for (const unit of ["Wh", "gCO2e", "mL"]) expect(text).toContain(unit);
@@ -43,12 +43,12 @@ for (const locale of ["it", "en"] as const) {
     const badge = await page.evaluate(() => navigator.clipboard.readText());
     expect(badge).toContain(body.methodologyVersion);
     expect(badge).toContain(d.sharing.disclaimer);
-    expect(badge).toContain(d.analysis.demoNotice);
+    expect(badge).toContain((body.methodologyVersion.startsWith("stub-") ? d.analysis.demoNotice : d.analysis.experimentalNotice));
     await sharing.getByRole("button", { name: d.sharing.showCard }).click();
     const card = sharing.getByRole("article", { name: d.sharing.cardTitle });
     await expect(card).toContainText(body.methodologyVersion);
     await expect(card).toContainText(d.sharing.disclaimer);
-    await expect(card).toContainText(d.analysis.demoNotice);
+    await expect(card).toContainText((body.methodologyVersion.startsWith("stub-") ? d.analysis.demoNotice : d.analysis.experimentalNotice));
     await sharing.getByRole("button", { name: d.sharing.copyImage }).click();
     await expect(sharing.getByRole("status")).toHaveText(d.sharing.imageCopied);
     const png = await page.evaluate(async () => {

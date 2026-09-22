@@ -12,6 +12,7 @@ export interface ShareModel {
   methodology: string;
   disclaimer: string;
   demoNotice: string | null;
+  experimentalNotice: string | null;
   badgeText: string;
   resultText: string;
 }
@@ -29,6 +30,11 @@ export function createShareModel(
   const demoNotice = result.methodologyVersion.startsWith("stub-")
     ? analysis.demoNotice
     : null;
+  const experimentalNotice = result.methodologyVersion.startsWith("experimental-")
+    ? analysis.experimentalNotice : null;
+  const disclaimer = [share.disclaimer,
+    ...(result.score === 0 && result.estimates.energyWh.value > 0 ? [analysis.zeroScoreNotice] : []),
+  ].join(" ");
   const summary = [
     brand,
     share.context,
@@ -37,8 +43,9 @@ export function createShareModel(
   ];
   const footer = [
     methodology,
-    share.disclaimer,
+    disclaimer,
     ...(demoNotice ? [demoNotice] : []),
+    ...(experimentalNotice ? [experimentalNotice] : []),
   ];
   const metrics = [
     [analysis.energy, "energyWh", "Wh"],
@@ -53,8 +60,9 @@ export function createShareModel(
     classLabel: analysis.classLabel,
     className: result.class,
     methodology,
-    disclaimer: share.disclaimer,
+    disclaimer,
     demoNotice,
+    experimentalNotice,
     badgeText: [...summary, ...footer].join("\n"),
     resultText: [
       ...summary,

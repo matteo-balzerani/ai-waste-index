@@ -42,6 +42,28 @@ function start(input: HTMLElement, submit: HTMLElement) {
 }
 
 describe("one-shot text flow", () => {
+  it.each(["it", "en"] as const)("shows experimental and zero-score disclosures in %s", async (locale) => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({
+      ...fixture, score: 0, methodologyVersion: "experimental-contract-fixture",
+    })));
+    const { dictionary, input, submit } = setup(locale);
+    start(input, submit);
+    expect(await screen.findByText(dictionary.analysis.experimentalNotice)).toBeInTheDocument();
+    expect(screen.getByText(dictionary.analysis.zeroScoreNotice)).toBeInTheDocument();
+    expect(screen.queryByText(dictionary.analysis.demoNotice)).not.toBeInTheDocument();
+  });
+  it.each(["it", "en"] as const)("shows unavailable without a result, share or automatic retry in %s", async (locale) => {
+    const fetch = vi.fn().mockResolvedValue(Response.json({ error: { code: "ESTIMATE_OUT_OF_DOMAIN" } }, { status: 422 }));
+    vi.stubGlobal("fetch", fetch);
+    const { dictionary, input, submit } = setup(locale);
+    start(input, submit);
+    expect(await screen.findByRole("alert")).toHaveTextContent(dictionary.apiMessages.ESTIMATE_OUT_OF_DOMAIN);
+    expect(input).toHaveValue(" Visible text 👋 ");
+    expect(screen.queryByRole("heading", { name: dictionary.analysis.resultTitle })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: dictionary.sharing.copyText })).not.toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   it.each(["it", "en"] as const)(
     "submits %s text unchanged and renders all estimates, ranges and demo disclosure",
     async (locale) => {

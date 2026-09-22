@@ -173,6 +173,9 @@ export function ResultSharing({
             </div>
             <p className="share-card-version">{model.methodology}</p>
             <p>{model.disclaimer}</p>
+            {model.experimentalNotice && (
+              <p className="share-card-demo">{model.experimentalNotice}</p>
+            )}
             {model.demoNotice && (
               <p className="share-card-demo">{model.demoNotice}</p>
             )}
