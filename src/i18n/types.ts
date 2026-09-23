@@ -84,6 +84,8 @@ export interface Dictionary {
     copyText: string;
     copyBadge: string;
     showCard: string;
+    open: string;
+    formatLabel: string;
     showBadge: string;
     badgeTitle: string;
     copyBadgeImage: string;

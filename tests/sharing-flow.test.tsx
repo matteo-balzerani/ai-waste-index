@@ -56,6 +56,7 @@ describe("explicit user-initiated sharing", () => {
       );
       expect(writeText.mock.calls[0]![0]).toContain("Wh");
       expect(writeText.mock.calls[0]![0]).toContain(d.analysis.demoNotice);
+      if (!screen.queryByRole("group", { name: d.sharing.formatLabel })) fireEvent.click(screen.getByRole("button", { name: d.sharing.open }));
       fireEvent.click(screen.getByRole("button", { name: d.sharing.showBadge }));
       fireEvent.click(
         screen.getByRole("button", { name: d.sharing.copyBadge }),
@@ -79,6 +80,7 @@ describe("explicit user-initiated sharing", () => {
       else
         clipboard(vi.fn().mockRejectedValue(new Error("permission details")));
       const { d } = setup();
+      if (!screen.queryByRole("group", { name: d.sharing.formatLabel })) fireEvent.click(screen.getByRole("button", { name: d.sharing.open }));
       fireEvent.click(screen.getByRole("button", { name: d.sharing.showBadge }));
       fireEvent.click(
         screen.getByRole("button", { name: d.sharing.copyBadge }),
@@ -112,7 +114,8 @@ describe("explicit user-initiated sharing", () => {
     );
     clipboard(undefined, write);
     const { d } = setup();
-    fireEvent.click(screen.getByRole("button", { name: d.sharing.showCard }));
+    if (!screen.queryByRole("group", { name: d.sharing.formatLabel })) fireEvent.click(screen.getByRole("button", { name: d.sharing.open }));
+      fireEvent.click(screen.getByRole("button", { name: d.sharing.showCard }));
     expect(
       screen.getByRole("article", { name: d.sharing.cardTitle }),
     ).toHaveTextContent(d.analysis.demoNotice);
@@ -140,6 +143,7 @@ describe("explicit user-initiated sharing", () => {
         });
       }
       const { d } = setup();
+      if (!screen.queryByRole("group", { name: d.sharing.formatLabel })) fireEvent.click(screen.getByRole("button", { name: d.sharing.open }));
       fireEvent.click(screen.getByRole("button", { name: d.sharing.showCard }));
       fireEvent.click(
         screen.getByRole("button", { name: d.sharing.copyImage }),
@@ -160,7 +164,8 @@ describe("explicit user-initiated sharing", () => {
     const { write } = clipboard();
     encode.mockResolvedValue(new Blob(["png"], { type: "image/png" }));
     const { d } = setup();
-    fireEvent.click(screen.getByRole("button", { name: d.sharing.showBadge }));
+    if (!screen.queryByRole("group", { name: d.sharing.formatLabel })) fireEvent.click(screen.getByRole("button", { name: d.sharing.open }));
+      fireEvent.click(screen.getByRole("button", { name: d.sharing.showBadge }));
     expect(write).not.toHaveBeenCalled();
     const preview = screen.getByRole("article", { name: d.sharing.badgeTitle });
     expect(preview).toHaveTextContent(sharingFixture.methodologyVersion);
@@ -183,7 +188,8 @@ describe("explicit user-initiated sharing", () => {
     clipboard(undefined, write);
     encode.mockResolvedValue(new Blob(["png"], { type: "image/png" }));
     const { d, unmount } = setup();
-    fireEvent.click(screen.getByRole("button", { name: d.sharing.showCard }));
+    if (!screen.queryByRole("group", { name: d.sharing.formatLabel })) fireEvent.click(screen.getByRole("button", { name: d.sharing.open }));
+      fireEvent.click(screen.getByRole("button", { name: d.sharing.showCard }));
     fireEvent.click(screen.getByRole("button", { name: d.sharing.copyImage }));
     const signal = encode.mock.calls.at(-1)![1];
     unmount();

@@ -38,6 +38,7 @@ for (const locale of ["it", "en"] as const) {
     for (const unit of ["Wh", "gCO2e", "mL"]) expect(text).toContain(unit);
     expect(text).not.toContain("Synthetic text");
     expect(text).not.toMatch(/https?:|data:|blob:/);
+    if (!(await sharing.getByRole("group", { name: d.sharing.formatLabel }).count())) await sharing.getByRole("button", { name: d.sharing.open, exact: true }).click();
     await sharing.getByRole("button", { name: d.sharing.showBadge, exact: true }).click();
     await sharing.getByRole("button", { name: d.sharing.copyBadge, exact: true }).click();
     await expect(sharing.getByRole("status")).toHaveText(d.sharing.badgeCopied);
@@ -45,6 +46,7 @@ for (const locale of ["it", "en"] as const) {
     expect(badge).toContain(body.methodologyVersion);
     expect(badge).toContain(d.sharing.disclaimer);
     expect(badge).toContain((body.methodologyVersion.startsWith("stub-") ? d.analysis.demoNotice : d.analysis.experimentalNotice));
+    if (!(await sharing.getByRole("group", { name: d.sharing.formatLabel }).count())) await sharing.getByRole("button", { name: d.sharing.open, exact: true }).click();
     await sharing.getByRole("button", { name: d.sharing.showCard }).click();
     const card = sharing.getByRole("article", { name: d.sharing.cardTitle });
     await expect(card).toContainText(body.methodologyVersion);
@@ -126,6 +128,7 @@ for (const locale of ["it", "en"] as const) {
         (element) => (element as HTMLTextAreaElement).selectionEnd,
       ),
     ).toBe((await field.inputValue()).length);
+    if (!(await sharing.getByRole("group", { name: d.sharing.formatLabel }).count())) await sharing.getByRole("button", { name: d.sharing.open, exact: true }).click();
     await sharing.getByRole("button", { name: d.sharing.showCard }).click();
     await sharing.getByRole("button", { name: d.sharing.copyImage }).click();
     await expect(sharing.getByRole("status")).toHaveText(

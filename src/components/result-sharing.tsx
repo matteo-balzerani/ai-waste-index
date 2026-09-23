@@ -28,7 +28,7 @@ export function ResultSharing({
     [result, locale, analysis, copy, brand],
   );
   const [showCard, setShowCard] = useState(false);
-  const [format, setFormat] = useState<"card" | "badge">("card");
+  const [format, setFormat] = useState<"card" | "badge">("badge");
   const [pending, setPending] = useState<Action | null>(null);
   const [message, setMessage] = useState("");
   const [manualText, setManualText] = useState<string | null>(null);
@@ -111,31 +111,12 @@ export function ResultSharing({
   };
   return (
     <section style={themeStyle} className="result-sharing" aria-labelledby="sharing-title">
-      <h3 id="sharing-title">{copy.title}</h3>
-
+      <h3 id="sharing-title" className="sr-only">{copy.title}</h3>
       <div className="analysis-actions" aria-busy={pending !== null}>
-        <button
-          type="button"
-          className="secondary-action"
-          disabled={pending !== null}
-          onClick={() => void copyOutput("text")}
-        >
-          {copy.copyText}
-        </button>
-        <button type="button" className="secondary-action"
-          aria-expanded={showCard && format === "badge"} aria-controls="share-card-panel"
-          onClick={() => { setFormat("badge"); setShowCard(true); }}>
-          {copy.showBadge}
-        </button>
-        <button
-          type="button"
-          className="secondary-action"
-          aria-expanded={showCard && format === "card"}
-          aria-controls="share-card-panel"
-          onClick={() => { setFormat("card"); setShowCard(true); }}
-        >
-          {copy.showCard}
-        </button>
+        <button type="button" className="primary-action" aria-expanded={showCard}
+          aria-controls="share-card-panel" onClick={() => setShowCard(true)}>{copy.open}</button>
+        <button type="button" className="text-action" disabled={pending !== null}
+          onClick={() => void copyOutput("text")}>{copy.copyText}</button>
       </div>
       <p role="status" aria-live="polite">
         {pending ? copy.pending : message}
@@ -156,6 +137,12 @@ export function ResultSharing({
       )}
       {showCard && (
         <div id="share-card-panel" className="share-card-panel">
+          <div className="share-formats" role="group" aria-label={copy.formatLabel}>
+            <button type="button" className="secondary-action" aria-pressed={format === "badge"}
+              onClick={() => setFormat("badge")}>{copy.showBadge}</button>
+            <button type="button" className="secondary-action" aria-pressed={format === "card"}
+              onClick={() => setFormat("card")}>{copy.showCard}</button>
+          </div>
           <h4 ref={cardHeading} tabIndex={-1}>
             {format === "badge" ? copy.badgeTitle : copy.cardTitle}
           </h4>

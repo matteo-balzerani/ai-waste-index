@@ -52,6 +52,7 @@ for (const locale of ["it", "en"] as const) {
         await expect(page.locator('.score-value')).toHaveText(`${result.score}/100`);
         await expect(page.locator('.version-label')).toHaveText(result.methodologyVersion);
         if (index === 0) await expect(page.getByText(d.analysis.zeroScoreNotice)).toBeVisible();
+        await page.getByRole('button', { name: d.sharing.open, exact: true }).click();
         for (const format of ['Badge', d.sharing.showCard]) {
           await page.getByRole('button', { name: format, exact: true }).click();
           const card = page.getByRole('article', { name: format === 'Badge' ? d.sharing.badgeTitle : d.sharing.cardTitle });
@@ -77,6 +78,7 @@ for (const locale of ["it", "en"] as const) {
     await page.goto(`/${locale}`);
     await page.getByRole('textbox').fill('Arbitrary sharing contract fixture.');
     await page.getByRole('button', { name: d.analysis.submit }).click();
+    await page.getByRole('button', { name: d.sharing.open, exact: true }).click();
     await page.getByRole('button', { name: d.sharing.showBadge, exact: true }).click();
     const card = page.getByRole('article', { name: d.sharing.badgeTitle });
     await expect(card).toContainText(d.analysis.zeroScoreNotice);

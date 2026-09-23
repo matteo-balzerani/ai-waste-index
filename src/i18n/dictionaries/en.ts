@@ -123,6 +123,8 @@ export const en = {
     disclaimer: "Estimated, not measured.",
     copyText: "Copy result",
     copyBadge: "Copy badge text",
+    open: "Share",
+    formatLabel: "Image format",
     showBadge: "Badge",
     badgeTitle: "Share badge",
     copyBadgeImage: "Copy badge image",
