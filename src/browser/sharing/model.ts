@@ -7,6 +7,7 @@ export interface ShareModel {
   context: string;
   scoreLabel: string;
   score: string;
+  scoreValue: string;
   classLabel: string;
   className: string;
   methodology: string;
@@ -26,7 +27,8 @@ export function createShareModel(
   brand: string,
 ): ShareModel {
   const format = new Intl.NumberFormat(locale, { maximumSignificantDigits: 3 });
-  const score = `${new Intl.NumberFormat(locale).format(result.score)}/100`;
+  const scoreValue = new Intl.NumberFormat(locale).format(result.score);
+  const score = `${scoreValue}/100`;
   const methodology = `${analysis.methodologyVersion}: ${result.methodologyVersion}`;
   const demoNotice = result.methodologyVersion.startsWith("stub-")
     ? analysis.demoNotice
@@ -58,6 +60,7 @@ export function createShareModel(
     context: share.context,
     scoreLabel: analysis.scoreLabel,
     score,
+    scoreValue,
     classLabel: analysis.classLabel,
     className: result.class,
     methodology,

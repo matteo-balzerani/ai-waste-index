@@ -66,8 +66,8 @@ export function drawShareCard(
   context.font = "28px Arial, sans-serif";
   const contextLines = wrap(context, model.context, available);
   const scoreTop = 132 + contextLines.length * 36;
-  const footerTop = scoreTop + 216 + metricsHeight;
-  const height = footerTop + footer.reduce((sum, lines) => sum + lines.length * 38 + 20, 0) + padding;
+  const footerTop = scoreTop + 196 + metricsHeight;
+  const height = footerTop + footer.reduce((sum, lines) => sum + lines.length * 36 + 12, 0) + padding;
   if (height > MAX_HEIGHT) throw new Error("CARD_UNAVAILABLE");
   canvas.width = width;
   canvas.height = height;
@@ -91,16 +91,27 @@ export function drawShareCard(
   context.font = "28px Arial, sans-serif";
   contextLines.forEach((line, index) => context.fillText(line, padding, 120 + index * 36));
   context.fillText(model.scoreLabel, padding, scoreTop + 10);
+  context.textBaseline = "alphabetic";
+  const scoreBaseline = scoreTop + (compact ? 128 : 151);
   context.font = `bold ${compact ? 88 : 116}px Arial, sans-serif`;
-  context.fillText(model.score, padding, scoreTop + 57);
+  context.fillText(model.scoreValue, padding, scoreBaseline);
+  const scoreWidth = context.measureText(model.scoreValue).width;
+  context.font = `${compact ? 30 : 36}px Arial, sans-serif`;
+  context.fillStyle = palette.muted;
+  context.fillText("/100", padding + scoreWidth + 10, scoreBaseline);
+  context.textBaseline = "top";
   const classX = width - padding - 136;
+  context.save();
+  context.translate(classX + 68, scoreTop + 78);
+  context.rotate(Math.PI / 30);
   context.fillStyle = palette.ink;
-  box(classX, scoreTop, 136, 156, 24);
+  box(-68, -78, 136, 156, 24);
   context.fillStyle = palette.lime;
   context.font = "26px Arial, sans-serif";
-  context.fillText(model.classLabel, classX + 24, scoreTop + 18);
+  context.fillText(model.classLabel, -44, -60);
   context.font = "bold 92px Arial, sans-serif";
-  context.fillText(model.className, classX + 32, scoreTop + 48);
+  context.fillText(model.className, -36, -30);
+  context.restore();
   context.fillStyle = palette.ink;
   metrics.forEach((metric, index) => {
     const x = padding + index * (metricWidth + 24);
@@ -119,8 +130,8 @@ export function drawShareCard(
   context.font = "28px Arial, sans-serif";
   let y = footerTop;
   for (const lines of footer) {
-    for (const line of lines) { context.fillText(line, padding, y); y += 38; }
-    y += 20;
+    for (const line of lines) { context.fillText(line, padding, y); y += 36; }
+    y += 12;
   }
 }
 

@@ -177,7 +177,7 @@ export function ResultSharing({
             <div className="share-card-score">
               <div>
                 <p>{model.scoreLabel}</p>
-                <strong>{model.score}</strong>
+                <strong>{model.scoreValue}<span className="share-denominator">/100</span></strong>
               </div>
               <div className="share-card-class">
                 <p>{model.classLabel}</p>

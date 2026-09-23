@@ -26,6 +26,7 @@ function drawing() {
     beginPath: vi.fn(),
     roundRect: vi.fn(),
     fill: vi.fn(),
+    save: vi.fn(), restore: vi.fn(), translate: vi.fn(), rotate: vi.fn(),
     measureText: (value: string) => ({ width: [...value].length * 14 }),
     fillText: (value: string) => text.push(value),
   };
@@ -49,7 +50,7 @@ describe("local card rendering and lifecycle", () => {
       const { text, canvas } = drawing();
       const data = model(locale);
       drawShareCard(canvas, data);
-      expect(text).toContain("23/100");
+      expect(text.join("")).toContain("23/100");
       expect(text).toContain("G");
       const drawn = text.join("");
       for (const required of [
