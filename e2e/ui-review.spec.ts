@@ -36,3 +36,17 @@ test("mobile metrics keep readable ranges and units", async ({ page }) => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
 });
+
+for (const locale of ["it", "en"] as const) {
+  for (const [width, height] of [[1366, 768], [390, 844], [320, 740]] as const) {
+    test(`${locale}: input actions fit ${width}×${height}`, async ({ page }) => {
+      const d = getDictionary(locale);
+      await page.setViewportSize({ width, height });
+      await page.goto(`/${locale}`);
+      await expect(page.getByRole("button", { name: d.analysis.submit, exact: true })).toBeInViewport({ ratio: 1 });
+      await page.getByRole("tab", { name: "Link" }).click();
+      await expect(page.getByRole("button", { name: d.extraction.submit, exact: true })).toBeInViewport({ ratio: 1 });
+    });
+  }
+}
+

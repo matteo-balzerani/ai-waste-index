@@ -71,7 +71,6 @@ export function Landing({
             <p>{dictionary.inputShell.privacyNotice}</p>
           </div>
         </details>
-        <span className="footer-brand" aria-hidden="true">{landing.brand}</span>
       </footer>
     </div>
   );

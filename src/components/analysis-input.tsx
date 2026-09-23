@@ -573,7 +573,7 @@ export function AnalysisInput({
         <form id="url-extraction-form" noValidate onSubmit={extract} aria-busy={pending !== null}>
 
           {maxUrlChars !== null && (
-            <p className="input-counter">
+            <p className="sr-only">
               {dictionary.extraction.urlLimit}:{" "}
               {new Intl.NumberFormat(locale).format(maxUrlChars)}
             </p>
