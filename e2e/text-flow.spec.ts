@@ -121,7 +121,7 @@ for (const locale of ["it", "en"] as const) {
       .getByRole("button", { name: dictionary.analysis.submit })
       .click();
     await expect(page.locator("main").getByRole("alert")).toHaveText(
-      dictionary.apiMessages.INVALID_INPUT,
+      dictionary.analysis.emptyInput,
     );
     await page.route("**/api/analyze", (route) =>
       route.fulfill({
@@ -159,7 +159,7 @@ for (const locale of ["it", "en"] as const) {
       dictionary.analysis.pending,
     );
     await expect(
-      page.getByRole("button", { name: dictionary.analysis.submit }),
+      page.getByRole("button", { name: dictionary.analysis.loadingLabel }),
     ).toBeDisabled();
     await page
       .getByRole("button", { name: dictionary.analysis.cancel })

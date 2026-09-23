@@ -205,3 +205,14 @@ progress { accent-color: var(--purple); width: 100%; margin: 1rem 0; }
 .share-panel-heading { justify-content: space-between; }
 .share-panel-heading h4 { margin: 0; }
 .share-toolbar .text-action { font-size: .8rem; }
+
+.composer > form { display: grid; grid-template-columns: minmax(0, 1fr); }
+.composer > form .analysis-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; width: 100%; }
+.composer > form .primary-action { min-width: 0; min-height: 50px; }
+.upload-label progress { width: min(80%, 18rem); margin: .5rem auto; }
+progress { appearance: none; height: 8px; border: 0; border-radius: 8px; overflow: hidden; background: var(--border); }
+progress::-webkit-progress-bar { background: var(--border); border-radius: 8px; }
+progress::-webkit-progress-value { background: var(--purple); border-radius: 8px; }
+progress::-moz-progress-bar { background: var(--purple); border-radius: 8px; }
+progress:indeterminate { background: repeating-linear-gradient(90deg, var(--purple) 0 12px, var(--border) 12px 24px); }
+.input-field:has(input[type="file"]:disabled):has(progress) { opacity: 1; }

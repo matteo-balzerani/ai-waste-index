@@ -150,7 +150,7 @@ describe("mandatory URL extraction review", () => {
         dictionary.extraction.pending,
       );
       expect(
-        screen.getByRole("button", { name: dictionary.extraction.submit }),
+        screen.getByRole("button", { name: dictionary.extraction.loadingLabel }),
       ).toBeDisabled();
       if (action === "cancel")
         fireEvent.click(

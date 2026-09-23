@@ -410,7 +410,7 @@ export function AnalysisInput({
               type="submit"
               disabled={!confirmed || pending !== null}
             >
-              {dictionary.extraction.analyze}
+              {pending ? dictionary.analysis.loadingLabel : dictionary.extraction.analyze}
             </button>
             <button
               className="secondary-action"
@@ -427,7 +427,7 @@ export function AnalysisInput({
                   : dictionary.extraction.changeUrl}
             </button>
           </div>
-          {pending && <p role="status">{dictionary.analysis.pending}</p>}
+          {pending && <p className="sr-only" role="status">{dictionary.analysis.pending}</p>}
           {error && <p id="input-error" role="alert">{errorMessage}</p>}
         </form>
 
@@ -480,7 +480,9 @@ export function AnalysisInput({
         tabIndex={0}
       >
         <div className="input-field">
-          <label className={activeMode === "screenshot" ? "upload-label" : "sr-only"} htmlFor={`input-${activeMode}`}>{activeMode === "screenshot" && <svg className="upload-icon" aria-hidden="true" viewBox="0 0 48 48"><path d="M24 34V14m-9 9 9-9 9 9" fill="none" stroke="currentColor" strokeWidth="2" /></svg>}{activeCopy.fieldLabel}</label>
+          <label className={activeMode === "screenshot" ? "upload-label" : "sr-only"} htmlFor={`input-${activeMode}`}>{activeMode === "screenshot" && <svg className="upload-icon" aria-hidden="true" viewBox="0 0 48 48"><path d="M24 34V14m-9 9 9-9 9 9" fill="none" stroke="currentColor" strokeWidth="2" /></svg>}<span role={pending === "ocr" ? "status" : undefined}>{pending === "ocr" ? dictionary.ocr.pending : activeCopy.fieldLabel}</span>
+            {pending === "ocr" && <progress aria-label={dictionary.ocr.pending} max={1} value={ocrProgress ?? undefined} />}
+          </label>
 
           {activeMode === "text" && (
             <textarea
@@ -518,6 +520,7 @@ export function AnalysisInput({
               aria-describedby={`${hintId}${draftError ? " input-error" : ""}`}
               aria-invalid={fieldInvalid || undefined}
               id="input-screenshot"
+              aria-label={activeCopy.fieldLabel}
               accept={screenshotMimeTypes.join(",")}
               disabled={!ocrLimits || maxTextCodePoints === null}
               onChange={(event) => {
@@ -550,19 +553,19 @@ export function AnalysisInput({
               type="submit"
               disabled={pending !== null || maxTextCodePoints === null}
             >
-              {dictionary.analysis.submit}<span aria-hidden="true">↗</span>
+              {pending ? dictionary.analysis.loadingLabel : dictionary.analysis.submit}<span aria-hidden="true">↗</span>
             </button>
-            {pending && (
-              <button
+            <button
+                style={{ visibility: pending ? "visible" : "hidden" }}
+                disabled={!pending} aria-hidden={!pending} tabIndex={pending ? 0 : -1}
                 className="secondary-action"
                 type="button"
                 onClick={reset}
               >
                 {dictionary.analysis.cancel}
               </button>
-            )}
           </div>
-          {pending && <p role="status">{dictionary.analysis.pending}</p>}
+          {pending && <p className="sr-only" role="status">{dictionary.analysis.pending}</p>}
           {(error || maxTextCodePoints === null) && (
             <p id="input-error" role="alert">
               {errorMessage}
@@ -588,10 +591,11 @@ export function AnalysisInput({
                 maxTextCodePoints === null
               }
             >
-              {dictionary.extraction.submit}<span aria-hidden="true">↗</span>
+              {pending ? dictionary.extraction.loadingLabel : dictionary.extraction.submit}<span aria-hidden="true">↗</span>
             </button>
-            {pending && (
-              <button
+            <button
+                style={{ visibility: pending ? "visible" : "hidden" }}
+                disabled={!pending} aria-hidden={!pending} tabIndex={pending ? 0 : -1}
                 className="secondary-action"
                 type="button"
                 onClick={() => {
@@ -601,9 +605,8 @@ export function AnalysisInput({
               >
                 {dictionary.analysis.cancel}
               </button>
-            )}
           </div>
-          {pending && <p role="status">{dictionary.extraction.pending}</p>}
+          {pending && <p className="sr-only" role="status">{dictionary.extraction.pending}</p>}
           {(error || maxUrlChars === null || maxTextCodePoints === null) && (
             <p id="input-error" role="alert">
               {errorMessage}
@@ -640,12 +643,6 @@ export function AnalysisInput({
           )}
           {pending === "ocr" && (
             <>
-              <p role="status">{dictionary.ocr.pending}</p>
-              <progress
-                aria-label={dictionary.ocr.pending}
-                max={1}
-                value={ocrProgress ?? undefined}
-              />
               <button
                 className="secondary-action"
                 type="button"

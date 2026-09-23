@@ -32,6 +32,7 @@ export interface Dictionary {
   };
   analysis: {
     submit: string;
+    loadingLabel: string;
     pending: string;
     cancel: string;
     newAnalysis: string;
@@ -59,6 +60,7 @@ export interface Dictionary {
   };
   extraction: {
     submit: string;
+    loadingLabel: string;
     pending: string;
     previewTitle: string;
     previewLabel: string;

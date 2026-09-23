@@ -77,3 +77,23 @@ test("preview pixels match the copied PNG for both formats", async ({ page, cont
   }
 });
 
+test("pending analysis preserves the primary action position and allows cancellation", async ({ page }) => {
+  const d = getDictionary("it"); let release!: () => void;
+  await page.route("**/api/analyze", async route => {
+    await new Promise<void>(resolve => { release = resolve; });
+    await route.fulfill({ json: result }).catch(() => {});
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/it"); await page.getByRole("textbox").fill("Synthetic pending review.");
+  const button = page.getByRole("button", { name: d.analysis.submit, exact: true });
+  const before = await button.boundingBox(); await button.click();
+  const busy = page.getByRole("button", { name: d.analysis.loadingLabel, exact: true });
+  await expect(busy).toBeDisabled();
+  const after = await busy.boundingBox();
+  expect(after).toEqual(before);
+  await page.getByRole("button", { name: d.analysis.cancel, exact: true }).click();
+  release();
+  await expect(page.getByRole("textbox")).toBeFocused();
+  await expect(page.locator(".score-value")).toHaveCount(0);
+});
+

@@ -60,6 +60,7 @@ export const it = {
     },
   },
   analysis: {
+    loadingLabel: "Analisi…",
     submit: "Analizza",
     pending: "Analisi in corso…",
     cancel: "Annulla",
@@ -92,6 +93,7 @@ export const it = {
       "Questo risultato esiste solo in questa pagina. Aggiornare, cambiare lingua o lasciare la pagina lo elimina.",
   },
   extraction: {
+    loadingLabel: "Estrazione…",
     submit: "Estrai il testo",
     pending: "Estrazione del testo…",
     previewTitle: "Controlla il testo estratto",
@@ -104,7 +106,7 @@ export const it = {
       "Usa una pagina pubblica HTML o di testo. Le pagine che richiedono accesso o JavaScript potrebbero non essere leggibili. In alternativa puoi incollare direttamente il testo.",
   },
   ocr: {
-    pending: "Lettura del testo nel browser…",
+    pending: "Lettura del testo…",
     changeImage: "Scegli un altro screenshot",
     formats:
       "PNG / JPEG",
