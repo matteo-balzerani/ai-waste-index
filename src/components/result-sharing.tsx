@@ -35,13 +35,14 @@ export function ResultSharing({
   const [manualText, setManualText] = useState<string | null>(null);
   const manual = useRef<HTMLTextAreaElement>(null);
   const cardHeading = useRef<HTMLHeadingElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
   const lifetime = useRef<AbortController | null>(null);
   const busy = useRef(false);
   const opener = useRef<HTMLButtonElement>(null);
   const close = () => {
-    if (busy.current) return;
-    setShowCard(false); setMessage(""); setManualText(null);
-    opener.current?.focus();
+    lifetime.current?.abort();
+    busy.current = false;
+    setShowCard(false); setPending(null); setMessage(""); setManualText(null);
   };
   const chooseFormat = (next: "card" | "badge") => {
     setFormat(next); setMessage(""); setManualText(null);
@@ -53,7 +54,7 @@ export function ResultSharing({
       controller.abort();
       lifetime.current = null;
     };
-  }, [model]);
+  }, [model, showCard]);
   useEffect(() => {
     if (manualText !== null) {
       manual.current?.focus();
@@ -61,7 +62,19 @@ export function ResultSharing({
     }
   }, [manualText]);
   useEffect(() => {
-    if (showCard) cardHeading.current?.focus();
+    const modal = dialog.current;
+    if (!showCard || !modal) return;
+    const trigger = opener.current;
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    root.style.overflow = "hidden";
+    modal.showModal();
+    cardHeading.current?.focus({ preventScroll: true });
+    return () => {
+      modal.close();
+      root.style.overflow = previousOverflow;
+      trigger?.focus({ preventScroll: true });
+    };
   }, [showCard]);
 
   const copyOutput = async (action: Action) => {
@@ -121,7 +134,7 @@ export function ResultSharing({
   };
   const feedback = <p role="status" aria-live="polite">{pending ? copy.pending : message}</p>;
   const manualFallback = manualText !== null && (
-        <div className="input-field">
+        <div className="input-field share-manual">
           <label htmlFor="manual-share-text">{copy.manualLabel}</label>
           <textarea
             ref={manual}
@@ -137,39 +150,50 @@ export function ResultSharing({
   return (
     <section style={themeStyle} className="result-sharing" aria-labelledby="sharing-title">
       <h3 id="sharing-title" className="sr-only">{copy.title}</h3>
-      <div className="analysis-actions" aria-busy={pending !== null}>
-        <button ref={opener} type="button" className="primary-action" disabled={pending !== null} aria-expanded={showCard}
-          aria-controls="share-card-panel" onClick={() => { if (showCard) close(); else { setMessage(""); setManualText(null); setShowCard(true); } }}>{copy.open}</button>
-        <button type="button" className="text-action" disabled={pending !== null}
-          onClick={() => void copyOutput("text")}>{copy.copyText}</button>
+      <div className="analysis-actions">
+        <button ref={opener} type="button" className="primary-action" aria-haspopup="dialog"
+          aria-expanded={showCard} onClick={() => setShowCard(true)}>{copy.open}</button>
       </div>
-      {!showCard && <>{feedback}{manualFallback}</>}
       {showCard && (
-        <div id="share-card-panel" className="share-card-panel" onKeyDown={event => {
-          if (event.key === "Escape") { event.preventDefault(); close(); }
-        }}>
-          <div className="share-panel-heading">
-            <h4 ref={cardHeading} tabIndex={-1}>{format === "badge" ? copy.badgeTitle : copy.cardTitle}</h4>
-            <button type="button" className="text-action" disabled={pending !== null} onClick={close}>{copy.close}</button>
+        <dialog ref={dialog} className="share-dialog" aria-modal="true" aria-labelledby="share-dialog-title"
+          onCancel={event => { event.preventDefault(); close(); }}
+          onKeyDown={event => {
+            if (event.key !== "Tab") return;
+            const controls = event.currentTarget.querySelectorAll<HTMLElement>(
+              'button:not(:disabled), textarea, [tabindex="0"]',
+            );
+            const first = controls[0];
+            const last = controls[controls.length - 1];
+            if (event.shiftKey && (document.activeElement === first || document.activeElement === cardHeading.current)) {
+              event.preventDefault(); last?.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault(); first?.focus();
+            }
+          }}>
+          <div className="share-dialog-controls">
+            <div className="share-panel-heading">
+              <h4 id="share-dialog-title" ref={cardHeading} tabIndex={-1}>{copy.open}</h4>
+              <button type="button" className="text-action" onClick={close}>{copy.close}</button>
+            </div>
+            <div className="share-toolbar" aria-busy={pending !== null}>
+              <div className="share-formats" role="group" aria-label={copy.formatLabel}>
+                <button type="button" className="secondary-action" disabled={pending !== null} aria-pressed={format === "badge"}
+                  onClick={() => chooseFormat("badge")}>{copy.showBadge}</button>
+                <button type="button" className="secondary-action" disabled={pending !== null} aria-pressed={format === "card"}
+                  onClick={() => chooseFormat("card")}>{copy.showCard}</button>
+              </div>
+              <div className="share-copy-actions">
+                <button type="button" className="primary-action" disabled={pending !== null}
+                  onClick={() => void copyOutput(format === "badge" ? "badgeImage" : "image")}>
+                  {format === "badge" ? copy.copyBadgeImage : copy.copyImage}
+                </button>
+                <button type="button" className="text-action" disabled={pending !== null}
+                  onClick={() => void copyOutput(format === "badge" ? "badge" : "text")}>{copy.copyText}</button>
+              </div>
+            </div>
+            {feedback}
           </div>
-          <div className="share-toolbar">
-          <div className="share-formats" role="group" aria-label={copy.formatLabel}>
-            <button type="button" className="secondary-action" disabled={pending !== null} aria-pressed={format === "badge"}
-              onClick={() => chooseFormat("badge")}>{copy.showBadge}</button>
-            <button type="button" className="secondary-action" disabled={pending !== null} aria-pressed={format === "card"}
-              onClick={() => chooseFormat("card")}>{copy.showCard}</button>
-          </div>
-          <button
-            type="button"
-            className="secondary-action"
-            disabled={pending !== null}
-            onClick={() => void copyOutput(format === "badge" ? "badgeImage" : "image")}
-          >
-            {format === "badge" ? copy.copyBadgeImage : copy.copyImage}
-          </button>
-          {format === "badge" && <button type="button" className="text-action" disabled={pending !== null} onClick={() => void copyOutput("badge")}>{copy.copyBadge}</button>}
-          </div>
-          {feedback}{manualFallback}
+          {manualText !== null ? manualFallback : (
           <SharePreview key={format} model={model} format={format} zoomIn={copy.zoomIn} zoomOut={copy.zoomOut}>
           <article className={`share-card ${format === "badge" ? "compact" : ""}`} aria-label={format === "badge" ? copy.badgeTitle : copy.cardTitle}>
             <p className="share-card-brand"><BrandMark />{model.brand}</p>
@@ -199,9 +223,8 @@ export function ResultSharing({
             </div>
           </article>
           </SharePreview>
-
-
-        </div>
+          )}
+        </dialog>
       )}
     </section>
   );

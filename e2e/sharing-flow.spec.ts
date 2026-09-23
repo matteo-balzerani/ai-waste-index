@@ -27,6 +27,8 @@ for (const locale of ["it", "en"] as const) {
     const requests: string[] = [];
     page.on("request", (request) => requests.push(request.url()));
     const sharing = page.getByRole("region", { name: d.sharing.title });
+    await sharing.getByRole("button", { name: d.sharing.open, exact: true }).click();
+    await sharing.getByRole("button", { name: d.sharing.showCard, exact: true }).click();
     await sharing.getByRole("button", { name: d.sharing.copyText }).click();
     await expect(sharing.getByRole("status")).toHaveText(d.sharing.textCopied);
     const text = await page.evaluate(() => navigator.clipboard.readText());
@@ -40,7 +42,7 @@ for (const locale of ["it", "en"] as const) {
     expect(text).not.toMatch(/https?:|data:|blob:/);
     if (!(await sharing.getByRole("group", { name: d.sharing.formatLabel }).count())) await sharing.getByRole("button", { name: d.sharing.open, exact: true }).click();
     await sharing.getByRole("button", { name: d.sharing.showBadge, exact: true }).click();
-    await sharing.getByRole("button", { name: d.sharing.copyBadge, exact: true }).click();
+    await sharing.getByRole("button", { name: d.sharing.copyText, exact: true }).click();
     await expect(sharing.getByRole("status")).toHaveText(d.sharing.badgeCopied);
     const badge = await page.evaluate(() => navigator.clipboard.readText());
     expect(badge).toContain(body.methodologyVersion);
@@ -94,6 +96,7 @@ for (const locale of ["it", "en"] as const) {
       search: "",
       hash: "",
     });
+    await sharing.getByRole("button", { name: d.sharing.close, exact: true }).click();
     await page.getByRole("button", { name: d.analysis.newAnalysis }).click();
     await expect(
       page.getByRole("article", { name: d.sharing.cardTitle }),
@@ -119,6 +122,8 @@ for (const locale of ["it", "en"] as const) {
     const requests: string[] = [];
     page.on("request", (request) => requests.push(request.url()));
     const sharing = page.getByRole("region", { name: d.sharing.title });
+    await sharing.getByRole("button", { name: d.sharing.open, exact: true }).click();
+    await sharing.getByRole("button", { name: d.sharing.showCard, exact: true }).click();
     await sharing.getByRole("button", { name: d.sharing.copyText }).click();
     const field = sharing.getByRole("textbox", { name: d.sharing.manualLabel });
     await expect(field).toBeFocused();
@@ -148,6 +153,7 @@ for (const locale of ["it", "en"] as const) {
       ),
     ).toBe(true);
     expect(requests).toEqual([]);
+    await sharing.getByRole("button", { name: d.sharing.close, exact: true }).click();
     await page
       .getByRole("link", {
         name: locale === "it" ? "English" : "Italiano",

@@ -61,6 +61,7 @@ for (const locale of ["it", "en"] as const) {
           expect(await page.locator(".share-preview").evaluate(e => e.scrollWidth <= e.clientWidth)).toBe(true);
         }
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await page.getByRole('button', { name: d.sharing.close, exact: true }).click();
         await page.getByRole('button', { name: d.analysis.newAnalysis }).click();
       }
     }

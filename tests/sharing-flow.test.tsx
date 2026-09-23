@@ -5,12 +5,21 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, afterAll, describe, expect, it, vi } from "vitest";
 import { ResultSharing } from "@/components/result-sharing";
 import { encodeShareCard, drawShareCard } from "@/browser/sharing/card";
 import { getDictionary } from "@/i18n/dictionaries";
 import { sharingFixture } from "./helpers/sharing";
 vi.mock("@/browser/sharing/card", () => ({ encodeShareCard: vi.fn(), drawShareCard: vi.fn() }));
+// JSDOM does not implement native dialog methods. Browser tests cover modality/focus.
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
+  HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
+});
+afterAll(() => {
+  Reflect.deleteProperty(HTMLDialogElement.prototype, "showModal");
+  Reflect.deleteProperty(HTMLDialogElement.prototype, "close");
+});
 const encode = vi.mocked(encodeShareCard);
 function setup(locale: "it" | "en" = "en") {
   const d = getDictionary(locale);
@@ -48,6 +57,8 @@ describe("explicit user-initiated sharing", () => {
       expect(writeText).not.toHaveBeenCalled();
       expect(write).not.toHaveBeenCalled();
       expect(encode).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: d.sharing.open }));
+      fireEvent.click(screen.getByRole("button", { name: d.sharing.showCard }));
       fireEvent.click(screen.getByRole("button", { name: d.sharing.copyText }));
       await waitFor(() =>
         expect(screen.getByRole("status")).toHaveTextContent(
@@ -59,7 +70,7 @@ describe("explicit user-initiated sharing", () => {
       if (!screen.queryByRole("group", { name: d.sharing.formatLabel })) fireEvent.click(screen.getByRole("button", { name: d.sharing.open }));
       fireEvent.click(screen.getByRole("button", { name: d.sharing.showBadge }));
       fireEvent.click(
-        screen.getByRole("button", { name: d.sharing.copyBadge }),
+        screen.getByRole("button", { name: d.sharing.copyText }),
       );
       await waitFor(() =>
         expect(screen.getByRole("status")).toHaveTextContent(
@@ -83,7 +94,7 @@ describe("explicit user-initiated sharing", () => {
       if (!screen.queryByRole("group", { name: d.sharing.formatLabel })) fireEvent.click(screen.getByRole("button", { name: d.sharing.open }));
       fireEvent.click(screen.getByRole("button", { name: d.sharing.showBadge }));
       fireEvent.click(
-        screen.getByRole("button", { name: d.sharing.copyBadge }),
+        screen.getByRole("button", { name: d.sharing.copyText }),
       );
       const field = await screen.findByRole("textbox", {
         name: d.sharing.manualLabel,
@@ -224,7 +235,28 @@ it("clears stale feedback, closes the preview and restores focus", async () => {
   expect(screen.queryByRole("article")).not.toBeInTheDocument();
   expect(open).toHaveFocus();
   fireEvent.click(open);
-  fireEvent.keyDown(screen.getByRole("button", { name: d.sharing.close }), { key: "Escape" });
+  fireEvent(screen.getByRole("dialog"), new Event("cancel", { cancelable: true }));
   expect(open).toHaveFocus();
   expect(screen.queryByRole("article")).not.toBeInTheDocument();
+});
+
+it("closes during copying, aborts encoding and ignores completion after reopening", async () => {
+  let complete!: () => void;
+  const write = vi.fn(() => new Promise<void>(resolve => { complete = resolve; }));
+  clipboard(undefined, write);
+  encode.mockResolvedValue(new Blob(["png"], { type: "image/png" }));
+  const { d } = setup();
+  const open = screen.getByRole("button", { name: d.sharing.open });
+  fireEvent.click(open);
+  fireEvent.click(screen.getByRole("button", { name: d.sharing.copyBadgeImage }));
+  const signal = encode.mock.calls.at(-1)![1];
+  expect(screen.getByRole("button", { name: d.sharing.close })).toBeEnabled();
+  fireEvent.click(screen.getByRole("button", { name: d.sharing.close }));
+  expect(signal.aborted).toBe(true);
+  expect(document.documentElement.style.overflow).toBe("");
+  expect(open).toHaveFocus();
+  fireEvent.click(open);
+  await act(async () => complete());
+  expect(screen.getByRole("status")).toBeEmptyDOMElement();
+  expect(screen.getByRole("button", { name: d.sharing.copyBadgeImage })).toBeEnabled();
 });

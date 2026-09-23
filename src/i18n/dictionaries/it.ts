@@ -133,7 +133,7 @@ export const it = {
     formatLabel: "Formato immagine",
     showBadge: "Badge",
     badgeTitle: "Badge da condividere",
-    copyBadgeImage: "Copia immagine badge",
+    copyBadgeImage: "Copia immagine",
     showCard: "Scheda",
     copyImage: "Copia immagine",
     cardTitle: "Scheda da condividere",

@@ -24,9 +24,9 @@ export function SharePreview({ model, format, zoomIn, zoomOut, children }: {
   return <div className={`share-preview ${format}`}>
     {drawn && <button type="button" className="text-action" aria-pressed={zoomed}
       onClick={() => setZoomed(value => !value)}>{zoomed ? zoomOut : zoomIn}</button>}
-    <div className="preview-scroll" hidden={!drawn} tabIndex={zoomed ? 0 : undefined}>
+    <div className="preview-scroll" hidden={!drawn} tabIndex={drawn ? 0 : undefined}>
       <canvas ref={canvas} aria-hidden="true" style={{ minWidth: zoomed ? (format === "badge" ? 360 : 540) : undefined }} />
     </div>
-    <div className={drawn ? "sr-only" : undefined}>{children}</div>
+    <div className={drawn ? "sr-only" : undefined} tabIndex={drawn ? undefined : 0}>{children}</div>
   </div>;
 }

@@ -133,7 +133,7 @@ export const en = {
     formatLabel: "Image format",
     showBadge: "Badge",
     badgeTitle: "Share badge",
-    copyBadgeImage: "Copy badge image",
+    copyBadgeImage: "Copy image",
     showCard: "Card",
     copyImage: "Copy image",
     cardTitle: "Share card",
