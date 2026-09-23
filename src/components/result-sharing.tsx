@@ -5,7 +5,7 @@ import type { PublicResult } from "@/contracts";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
 import { createShareModel } from "@/browser/sharing/model";
-import { themeStyle } from "@/presentation/theme";
+import { classStyle, themeStyle } from "@/presentation/theme";
 import { SharePreview } from "./share-preview";
 import { BrandMark } from "./brand-mark";
 import { encodeShareCard } from "@/browser/sharing/card";
@@ -198,7 +198,7 @@ export function ResultSharing({
           <article className={`share-card ${format === "badge" ? "compact" : ""}`} aria-label={format === "badge" ? copy.badgeTitle : copy.cardTitle}>
             <p className="share-card-brand"><BrandMark />{model.brand}</p>
             <p className="share-card-context">{model.context}</p>
-            <div className="share-card-score">
+            <div className="share-card-score" style={classStyle(model.className)}>
               <div>
                 <p>{model.scoreLabel}</p>
                 <strong>{model.scoreValue}<span className="share-denominator">/100</span></strong>
@@ -212,7 +212,6 @@ export function ResultSharing({
               <p key={metric.label}>{metric.label}<strong>{metric.value}</strong><span>{metric.range}</span></p>
             )}</div>}
             <div className="share-card-footer">
-            <p className="share-card-version">{model.methodology}</p>
             <p>{model.disclaimer}</p>
             {model.experimentalNotice && (
               <p className="share-card-demo">{model.experimentalNotice}</p>
@@ -220,6 +219,7 @@ export function ResultSharing({
             {model.demoNotice && (
               <p className="share-card-demo">{model.demoNotice}</p>
             )}
+            <p className="share-card-version">{model.methodology}</p>
             </div>
           </article>
           </SharePreview>

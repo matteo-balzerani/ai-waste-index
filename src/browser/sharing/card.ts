@@ -1,5 +1,5 @@
 import type { ShareModel } from "./model";
-import { palette } from "@/presentation/theme";
+import { classPalette, palette } from "@/presentation/theme";
 
 const WIDTH = 1080;
 const PADDING = 64;
@@ -47,88 +47,104 @@ export function drawShareCard(
   if (!context || model.resultText.length > MAX_COPY_LENGTH) throw new Error("CARD_UNAVAILABLE");
   const compact = format === "badge";
   const width = compact ? 720 : WIDTH;
-  const padding = compact ? 40 : PADDING;
+  const padding = compact ? 48 : PADDING;
   const available = width - padding * 2;
-  context.font = "28px Arial, sans-serif";
-  const footer = [model.methodology, model.disclaimer,
-    ...(model.demoNotice ? [model.demoNotice] : []),
+  context.font = "26px Arial, sans-serif";
+  const footer = [model.disclaimer,
     ...(model.experimentalNotice ? [model.experimentalNotice] : []),
+    ...(model.demoNotice ? [model.demoNotice] : []),
+    model.methodology,
   ].map(text => wrap(context, text, available));
   const metricWidth = (available - 48) / 3;
-  context.font = "26px Arial, sans-serif";
   const metrics = compact ? [] : model.metrics.map(metric => ({
     ...metric, lines: wrap(context, metric.range.replace(": ", ": \n"), metricWidth),
   }));
   // Measure values too: finite contract numbers may be much wider than normal examples.
-  context.font = "bold 30px Arial, sans-serif";
+  context.font = "bold 34px Arial, sans-serif";
   const metricValues = metrics.map(metric => wrap(context, metric.value, metricWidth));
-  const metricsHeight = compact ? 0 : 76 + Math.max(...metrics.map((metric, index) => metric.lines.length * 34 + metricValues[index]!.length * 38));
-  context.font = "28px Arial, sans-serif";
+  const metricsHeight = compact ? 0 : 40 + Math.max(...metrics.map((metric, index) => metric.lines.length * 34 + metricValues[index]!.length * 42));
+  context.font = "26px Arial, sans-serif";
   const contextLines = wrap(context, model.context, available);
-  const scoreTop = 132 + contextLines.length * 36;
-  const footerTop = scoreTop + 196 + metricsHeight;
-  const height = footerTop + footer.reduce((sum, lines) => sum + lines.length * 36 + 12, 0) + padding;
+  const contextTop = padding + 68;
+  const scoreTop = contextTop + contextLines.length * 34 + 32;
+  const heroHeight = compact ? 240 : 272;
+  const metricsTop = scoreTop + heroHeight + 48;
+  const footerTop = (compact ? scoreTop + heroHeight : metricsTop + metricsHeight) + 32;
+  const height = footerTop + 64 + footer.reduce((sum, lines) => sum + lines.length * 36 + 12, 0);
   if (height > MAX_HEIGHT) throw new Error("CARD_UNAVAILABLE");
   canvas.width = width;
   canvas.height = height;
-  context.fillStyle = compact ? palette.lime : palette.paper;
-  context.fillRect(0, 0, width, height);
-  context.fillStyle = compact ? palette.ink : palette.lime;
-  context.fillRect(0, 0, width, 14);
   context.textBaseline = "top";
   const box = (x: number, y: number, w: number, h: number, radius: number) => {
     context.beginPath(); context.roundRect(x, y, w, h, radius); context.fill();
   };
+  context.fillStyle = palette.paper;
+  box(0, 0, width, height, 24);
   context.fillStyle = palette.ink;
-  box(padding, 48, 48, 48, 14);
+  box(padding, padding, 40, 40, 12);
   context.fillStyle = palette.lime;
-  box(padding + 10, 65, 6, 16, 3);
-  box(padding + 21, 60, 6, 26, 3);
-  box(padding + 32, 65, 6, 16, 3);
+  box(padding + 8, padding + 14, 5, 13, 2.5);
+  box(padding + 18, padding + 9, 5, 23, 2.5);
+  box(padding + 28, padding + 14, 5, 13, 2.5);
   context.fillStyle = palette.ink;
-  context.font = "bold 34px Arial, sans-serif";
-  context.fillText(model.brand, padding + 64, 54);
-  context.font = "28px Arial, sans-serif";
-  contextLines.forEach((line, index) => context.fillText(line, padding, 120 + index * 36));
-  context.fillText(model.scoreLabel, padding, scoreTop + 10);
-  context.textBaseline = "alphabetic";
-  const scoreBaseline = scoreTop + (compact ? 128 : 151);
-  context.font = `bold ${compact ? 88 : 116}px Arial, sans-serif`;
-  context.fillText(model.scoreValue, padding, scoreBaseline);
-  const scoreWidth = context.measureText(model.scoreValue).width;
-  context.font = `${compact ? 30 : 36}px Arial, sans-serif`;
+  context.font = "bold 30px Arial, sans-serif";
+  context.fillText(model.brand, padding + 56, padding + 5);
   context.fillStyle = palette.muted;
-  context.fillText("/100", padding + scoreWidth + 10, scoreBaseline);
-  context.textBaseline = "top";
-  const classX = width - padding - 136;
-  context.save();
-  context.translate(classX + 68, scoreTop + 78);
-  context.rotate(Math.PI / 30);
-  context.fillStyle = palette.ink;
-  box(-68, -78, 136, 156, 24);
-  context.fillStyle = palette.lime;
   context.font = "26px Arial, sans-serif";
-  context.fillText(model.classLabel, -44, -60);
-  context.font = "bold 92px Arial, sans-serif";
-  context.fillText(model.className, -36, -30);
-  context.restore();
-  context.fillStyle = palette.ink;
+  contextLines.forEach((line, index) => context.fillText(line, padding, contextTop + index * 34));
+  const classColors = classPalette[model.className];
+  context.fillStyle = classColors.background;
+  box(padding, scoreTop, available, heroHeight, 28);
+  const scoreX = padding + 32;
+  context.fillStyle = classColors.foreground;
+  context.fillText(model.scoreLabel, scoreX, scoreTop + 24);
+  context.textBaseline = "alphabetic";
+  const scoreBaseline = scoreTop + (compact ? 206 : 238);
+  context.font = `bold ${compact ? 168 : 208}px Arial, sans-serif`;
+  context.fillText(model.scoreValue, scoreX, scoreBaseline);
+  const scoreWidth = context.measureText(model.scoreValue).width;
+  context.font = "32px Arial, sans-serif";
+  context.fillStyle = classColors.foreground;
+  context.fillText("/100", scoreX + scoreWidth + 12, scoreBaseline);
+  context.textBaseline = "top";
+  const classWidth = compact ? 176 : 208;
+  const classX = width - padding - classWidth - 24;
+  context.fillStyle = classColors.foreground;
+  context.textAlign = "center";
+  context.font = "26px Arial, sans-serif";
+  context.fillText(model.classLabel, classX + classWidth / 2, scoreTop + 24);
+  context.textBaseline = "alphabetic";
+  context.font = `bold ${compact ? 144 : 176}px Arial, sans-serif`;
+  context.fillText(model.className, classX + classWidth / 2, scoreBaseline);
+  context.textBaseline = "top";
+  context.textAlign = "left";
+  if (!compact) {
+    context.fillStyle = palette.border;
+    context.fillRect(padding, metricsTop - 24, available, 1);
+  }
   metrics.forEach((metric, index) => {
     const x = padding + index * (metricWidth + 24);
-    let y = scoreTop + 206;
+    let y = metricsTop;
+    context.fillStyle = palette.muted;
     context.font = "26px Arial, sans-serif";
     context.fillText(metric.label, x, y);
     y += 40;
-    context.font = "bold 30px Arial, sans-serif";
-    metricValues[index]!.forEach(line => { context.fillText(line, x, y); y += 38; });
+    context.fillStyle = palette.ink;
+    context.font = "bold 34px Arial, sans-serif";
+    metricValues[index]!.forEach(line => { context.fillText(line, x, y); y += 42; });
+    context.fillStyle = palette.muted;
     context.font = "26px Arial, sans-serif";
     metric.lines.forEach(line => { context.fillText(line, x, y); y += 34; });
   });
+  context.fillStyle = palette.background;
+  context.beginPath();
+  context.roundRect(0, footerTop, width, height - footerTop, [0, 0, 24, 24]);
+  context.fill();
+  context.fillStyle = palette.border;
+  context.fillRect(0, footerTop, width, 1);
   context.fillStyle = palette.muted;
-  context.fillRect(padding, footerTop - 18, available, 1);
-  context.fillStyle = palette.ink;
-  context.font = "28px Arial, sans-serif";
-  let y = footerTop;
+  context.font = "26px Arial, sans-serif";
+  let y = footerTop + 32;
   for (const lines of footer) {
     for (const line of lines) { context.fillText(line, padding, y); y += 36; }
     y += 12;

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { PublicResult } from "@/contracts";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
+import { classStyle } from "@/presentation/theme";
 import { UiIcon } from "./ui-icon";
 import { ResultSharing } from "./result-sharing";
 
@@ -38,7 +39,7 @@ export function AnalysisResult({ result, locale, copy, sharing, brand, onReset }
             <p className="eyebrow">{copy.scoreLabel}</p>
             <p className="score-value">{result.score}<span>/100</span></p>
           </div>
-          <div className="class-badge">
+          <div className="class-badge" style={classStyle(result.class)}>
             <span>{copy.classLabel}</span><strong>{result.class}</strong>
           </div>
         </div>

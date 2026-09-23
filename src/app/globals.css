@@ -90,7 +90,7 @@ progress { accent-color: var(--purple); width: 100%; margin: 1rem 0; }
 .eyebrow { font-size: .8rem; font-weight: 700; letter-spacing: .04em; margin: 0; }
 .score-value { font-size: clamp(4rem, 10vw, 6.5rem); font-weight: 800; letter-spacing: -.08em; line-height: 1.15; margin: 0; font-variant-numeric: tabular-nums; }
 .score-value span { color: var(--muted); font-size: clamp(1.2rem, 3vw, 2rem); font-weight: 400; letter-spacing: -.04em; margin-left: .6rem; }
-.class-badge { display: grid; align-content: center; justify-items: center; background: var(--lime); border-radius: 24px; width: 110px; min-height: 116px; padding: 1rem; transform: rotate(6deg); box-shadow: 7px 7px 0 var(--foreground); flex: none; }
+.class-badge { display: grid; align-content: center; justify-items: center; background: var(--class-background); color: var(--class-foreground); border-radius: 24px; width: 110px; min-height: 116px; padding: 1rem; transform: rotate(6deg); box-shadow: 7px 7px 0 var(--foreground); flex: none; }
 .class-badge > span { font-size: .8rem; font-weight: 700; }
 .class-badge strong { font-size: 4rem; line-height: 1; letter-spacing: -.07em; }
 .result-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; margin: 1rem 0; font-size: .75rem; }
@@ -113,18 +113,19 @@ progress { accent-color: var(--purple); width: 100%; margin: 1rem 0; }
 .result-sharing { padding: .25rem 0; display: grid; gap: 1rem; }
 .result-sharing h3 { margin: 0; font-size: 1.5rem; letter-spacing: -.045em; }
 .result-sharing > p { margin: 0; }
-.share-card { width: 100%; max-width: 42rem; background: white; border: 1px solid var(--foreground); border-radius: 20px; overflow: hidden; overflow-wrap: anywhere; padding: clamp(1.25rem, 4vw, 2rem); border-top: 10px solid var(--lime); }
-.share-card.compact { max-width: 30rem; background: var(--lime); border-top-color: var(--foreground); }
+.share-card { width: 100%; max-width: 42rem; background: white; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; overflow-wrap: anywhere; padding: clamp(1.25rem, 4vw, 2rem); }
+.share-card.compact { max-width: 30rem; }
 .share-card p { margin: 0 0 .75rem; line-height: 1.5; }
 .share-card .share-card-brand { display: flex; gap: .6rem; align-items: center; font-weight: 800; font-size: 1.1rem; letter-spacing: -.04em; }
 .share-card-brand .brand-mark { width: 30px; height: 30px; }
 .share-card-context { color: var(--muted); font-size: .8rem; }
-.share-card-score { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin: 1.5rem 0; }
+.share-card-score { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin: 1.5rem 0; padding: 1rem; border-radius: 18px; background: var(--class-background); color: var(--class-foreground); }
+.share-card-score .share-denominator { color: inherit; }
 .share-card-score p { margin-bottom: .25rem; font-size: .8rem; }
-.share-card-score strong { font-size: clamp(2.25rem, 7vw, 4rem); line-height: 1; letter-spacing: -.06em; }
-.share-card-class { text-align: center; background: var(--foreground); color: var(--lime); padding: 1rem 1.3rem; border-radius: 16px; }
+.share-card-score strong { font-size: clamp(3.5rem, 10vw, 5rem); line-height: 1; letter-spacing: -.06em; }
+.share-card-class { text-align: center; min-width: 4.5rem; }
 .share-card-version { white-space: pre-wrap; }
-.share-card-footer { border-top: 1px solid #9aa286; padding-top: 1rem; font-size: .8rem; }
+.share-card-footer { border-top: 1px solid var(--border); padding-top: 1rem; font-size: .8rem; color: var(--muted); }
 .share-card-footer p:last-child { margin-bottom: 0; }
 .share-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .75rem; border-top: 1px solid var(--border); padding: 1rem 0; }
 .share-metrics p { margin: 0; font-size: .75rem; }
@@ -219,7 +220,7 @@ progress:indeterminate { background: repeating-linear-gradient(90deg, var(--purp
 .extraction-preview .analysis-actions button { min-width: 0; min-height: 4rem; line-height: 1.2; padding-inline: .75rem; }
 
 .share-denominator { font-size: .4em; font-weight: 400; color: var(--muted); margin-left: .2em; }
-.share-card-class { transform: rotate(6deg); }
+.share-card-class strong { font-size: 3.5rem; letter-spacing: 0; }
 
 .ui-icon { width: 20px; height: 20px; flex: none; }
 .metric-icon .ui-icon { width: 18px; height: 18px; }
@@ -239,9 +240,9 @@ progress:indeterminate { background: repeating-linear-gradient(90deg, var(--purp
 .share-dialog [role="status"] { min-height: 1.3em; margin: 0; font-size: .85rem; line-height: 1.4; }
 .share-dialog .share-preview { flex: 1; display: flex; flex-direction: column; gap: .5rem; min-height: 0; max-width: none; }
 .share-dialog .share-preview > button { flex: none; align-self: end; }
-.share-dialog .preview-scroll { min-height: 0; padding: .5rem; background: var(--background); border: 1px solid var(--border); border-radius: 14px; overscroll-behavior: contain; }
-.share-dialog .preview-scroll canvas { max-width: 540px; margin-inline: auto; }
-.share-dialog .badge canvas { max-width: 360px; }
+.share-dialog .preview-scroll { min-height: 0; padding: 20px; background: #edf0e8; border: 0; border-radius: 16px; overscroll-behavior: contain; }
+.share-dialog .preview-scroll canvas { max-width: 540px; margin-inline: auto; filter: drop-shadow(0 4px 9px #20221f12); }
+.share-dialog .badge canvas { max-width: 420px; }
 .share-dialog .share-preview > div:not(.preview-scroll):not(.sr-only) { overflow: auto; overscroll-behavior: contain; }
 .share-manual { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: .5rem; }
 .share-manual textarea { min-height: 8rem; max-height: 100%; }

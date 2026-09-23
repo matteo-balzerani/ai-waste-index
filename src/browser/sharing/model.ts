@@ -9,7 +9,7 @@ export interface ShareModel {
   score: string;
   scoreValue: string;
   classLabel: string;
-  className: string;
+  className: PublicResult["class"];
   methodology: string;
   disclaimer: string;
   demoNotice: string | null;
