@@ -106,7 +106,7 @@ progress { accent-color: var(--purple); width: 100%; margin: 1rem 0; }
 .metric-icon { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 1.25rem; font-weight: 400; background: #eff4d8; }
 .metric-icon.co2eGrams { background: #eee9fb; }
 .metric-icon.waterMl { background: #e4f1fd; }
-.metric-value { margin: .7rem 0 .4rem; font-size: .8rem; white-space: normal; overflow-wrap: anywhere; }
+.metric-value { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem; margin: .7rem 0 .4rem; font-size: .8rem; white-space: normal; overflow-wrap: anywhere; }
 .metric-value strong { font-size: 1.8rem; line-height: 1.1; letter-spacing: -.06em; }
 .metric-range { color: var(--muted); font-size: .72rem; line-height: 1.6; margin: 0; overflow-wrap: anywhere; }
 .methodology-copy { border-top: 1px solid var(--border); margin-top: 1rem; padding-top: .2rem; font-size: .8rem; color: var(--muted); }
@@ -157,11 +157,15 @@ progress { accent-color: var(--purple); width: 100%; margin: 1rem 0; }
   .class-badge strong { font-size: 3.75rem; }
   .class-badge > span { font-size: .7rem; }
   .score-value { font-size: clamp(4rem, 17vw, 6.5rem); }
-  .metric-grid { gap: .7rem; }
+  .metric-grid { grid-template-columns: 1fr; gap: .8rem; }
+  .metric { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); align-items: baseline; column-gap: .5rem; }
+  .metric h3 { grid-row: span 2; }
+  .metric-value { margin: 0 0 .15rem; }
+  .metric-range { grid-column: 2; }
   .metric-icon { width: 23px; height: 23px; border-radius: 6px; }
   .metric h3 { font-size: .75rem; gap: .3rem; }
   .metric-value strong { font-size: 1.45rem; }
-  .metric-range { font-size: .65rem; }
+  .metric-range { font-size: .8125rem; line-height: 1.4; }
   .result-sharing .analysis-actions { gap: .5rem; }
   .result-sharing .secondary-action { padding: .75rem 1rem; font-size: .8rem; }
   .extraction-preview { padding: 1.25rem; }
@@ -171,7 +175,7 @@ progress { accent-color: var(--purple); width: 100%; margin: 1rem 0; }
   .metric-grid { grid-template-columns: 1fr; gap: 1rem; }
   .metric { display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
   .metric-range { grid-column: 2; }
-  .metric-value { margin: 0; }
+  .metric-value { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem; margin: 0; }
   .tab-icon { display: none; }
   .brand { font-size: .85rem; }
 }

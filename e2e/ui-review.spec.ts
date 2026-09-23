@@ -22,3 +22,17 @@ for (const locale of ["it", "en"] as const) {
     }
   });
 }
+
+test("mobile metrics keep readable ranges and units", async ({ page }) => {
+  await page.route("**/api/analyze", route => route.fulfill({ json: result }));
+  for (const locale of ["it", "en"] as const) for (const width of [320, 390, 430]) {
+    const d = getDictionary(locale);
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto(`/${locale}`);
+    await page.getByRole("textbox").fill("Synthetic metrics review.");
+    await page.getByRole("button", { name: d.analysis.submit, exact: true }).click();
+    await expect(page.locator(".metric-range")).toHaveCount(3);
+    expect(await page.locator(".metric-range").first().evaluate(e => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(12);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+});
