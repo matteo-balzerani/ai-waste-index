@@ -124,6 +124,7 @@ export const en = {
     copyText: "Copy result",
     copyBadge: "Copy badge text",
     open: "Share",
+    close: "Close",
     zoomIn: "Enlarge",
     zoomOut: "Fit",
     formatLabel: "Image format",

@@ -86,6 +86,7 @@ export interface Dictionary {
     showCard: string;
     open: string;
     formatLabel: string;
+    close: string;
     zoomIn: string;
     zoomOut: string;
     showBadge: string;

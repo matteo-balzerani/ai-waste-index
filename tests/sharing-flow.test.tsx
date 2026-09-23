@@ -210,3 +210,21 @@ it("retains a readable equivalent when canvas preview fails", () => {
   expect(article).toHaveTextContent(d.sharing.disclaimer);
   expect(screen.queryByRole("button", { name: d.sharing.zoomIn })).not.toBeInTheDocument();
 });
+
+it("clears stale feedback, closes the preview and restores focus", async () => {
+  clipboard(); encode.mockResolvedValue(new Blob(["png"], { type: "image/png" }));
+  const { d } = setup();
+  const open = screen.getByRole("button", { name: d.sharing.open });
+  fireEvent.click(open);
+  fireEvent.click(screen.getByRole("button", { name: d.sharing.copyBadgeImage }));
+  await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(d.sharing.imageCopied));
+  fireEvent.click(screen.getByRole("button", { name: d.sharing.showCard }));
+  expect(screen.getByRole("status")).toBeEmptyDOMElement();
+  fireEvent.click(screen.getByRole("button", { name: d.sharing.close }));
+  expect(screen.queryByRole("article")).not.toBeInTheDocument();
+  expect(open).toHaveFocus();
+  fireEvent.click(open);
+  fireEvent.keyDown(screen.getByRole("button", { name: d.sharing.close }), { key: "Escape" });
+  expect(open).toHaveFocus();
+  expect(screen.queryByRole("article")).not.toBeInTheDocument();
+});
