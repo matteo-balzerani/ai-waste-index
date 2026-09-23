@@ -50,3 +50,30 @@ for (const locale of ["it", "en"] as const) {
   }
 }
 
+test("preview pixels match the copied PNG for both formats", async ({ page, context }) => {
+  const d = getDictionary("it");
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.route("**/api/analyze", route => route.fulfill({ json: result }));
+  await page.goto("/it");
+  await page.getByRole("textbox").fill("Synthetic image review.");
+  await page.getByRole("button", { name: d.analysis.submit, exact: true }).click();
+  await page.getByRole("button", { name: d.sharing.open, exact: true }).click();
+  for (const format of ["badge", "card"] as const) {
+    await page.getByRole("button", { name: format === "badge" ? d.sharing.showBadge : d.sharing.showCard, exact: true }).click();
+    await expect(page.locator(".preview-scroll canvas")).toBeVisible();
+    await page.getByRole("button", { name: format === "badge" ? d.sharing.copyBadgeImage : d.sharing.copyImage, exact: true }).click();
+    await expect(page.getByRole("status")).toHaveText(d.sharing.imageCopied);
+    await expect.poll(async () => page.evaluate(async () => {
+      const preview = document.querySelector<HTMLCanvasElement>(".preview-scroll canvas")!;
+      const [item] = await navigator.clipboard.read();
+      const bitmap = await createImageBitmap(await item!.getType("image/png"));
+      const target = document.createElement("canvas"); target.width = bitmap.width; target.height = bitmap.height;
+      target.getContext("2d")!.drawImage(bitmap, 0, 0); bitmap.close();
+      if (target.width !== preview.width || target.height !== preview.height) return false;
+      const a = preview.getContext("2d")!.getImageData(0, 0, preview.width, preview.height).data;
+      const b = target.getContext("2d")!.getImageData(0, 0, target.width, target.height).data;
+      return { width: preview.width, height: preview.height, different: a.reduce((n, value, i) => n + Number(value !== b[i]), 0), maxDelta: a.reduce((n, value, i) => Math.max(n, Math.abs(value - b[i]!)), 0) };
+    })).toMatchObject({ different: 0 });
+  }
+});
+

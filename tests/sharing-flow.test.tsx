@@ -7,10 +7,10 @@ import {
 } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ResultSharing } from "@/components/result-sharing";
-import { encodeShareCard } from "@/browser/sharing/card";
+import { encodeShareCard, drawShareCard } from "@/browser/sharing/card";
 import { getDictionary } from "@/i18n/dictionaries";
 import { sharingFixture } from "./helpers/sharing";
-vi.mock("@/browser/sharing/card", () => ({ encodeShareCard: vi.fn() }));
+vi.mock("@/browser/sharing/card", () => ({ encodeShareCard: vi.fn(), drawShareCard: vi.fn() }));
 const encode = vi.mocked(encodeShareCard);
 function setup(locale: "it" | "en" = "en") {
   const d = getDictionary(locale);
@@ -198,4 +198,15 @@ describe("explicit user-initiated sharing", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(write).toHaveBeenCalledOnce();
   });
+});
+
+it("retains a readable equivalent when canvas preview fails", () => {
+  vi.mocked(drawShareCard).mockImplementationOnce(() => { throw new Error("canvas unavailable"); });
+  const { d } = setup();
+  fireEvent.click(screen.getByRole("button", { name: d.sharing.open }));
+  const article = screen.getByRole("article", { name: d.sharing.badgeTitle });
+  expect(article).toBeVisible();
+  expect(article.parentElement).not.toHaveClass("sr-only");
+  expect(article).toHaveTextContent(d.sharing.disclaimer);
+  expect(screen.queryByRole("button", { name: d.sharing.zoomIn })).not.toBeInTheDocument();
 });

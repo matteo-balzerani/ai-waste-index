@@ -6,6 +6,7 @@ import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
 import { createShareModel } from "@/browser/sharing/model";
 import { themeStyle } from "@/presentation/theme";
+import { SharePreview } from "./share-preview";
 import { BrandMark } from "./brand-mark";
 import { encodeShareCard } from "@/browser/sharing/card";
 
@@ -146,6 +147,7 @@ export function ResultSharing({
           <h4 ref={cardHeading} tabIndex={-1}>
             {format === "badge" ? copy.badgeTitle : copy.cardTitle}
           </h4>
+          <SharePreview key={format} model={model} format={format} zoomIn={copy.zoomIn} zoomOut={copy.zoomOut}>
           <article className={`share-card ${format === "badge" ? "compact" : ""}`} aria-label={format === "badge" ? copy.badgeTitle : copy.cardTitle}>
             <p className="share-card-brand"><BrandMark />{model.brand}</p>
             <p className="share-card-context">{model.context}</p>
@@ -173,6 +175,7 @@ export function ResultSharing({
             )}
             </div>
           </article>
+          </SharePreview>
           <button
             type="button"
             className="secondary-action"

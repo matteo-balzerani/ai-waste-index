@@ -124,6 +124,8 @@ export const it = {
     copyText: "Copia risultato",
     copyBadge: "Copia il testo del badge",
     open: "Condividi",
+    zoomIn: "Ingrandisci",
+    zoomOut: "Adatta",
     formatLabel: "Formato immagine",
     showBadge: "Badge",
     badgeTitle: "Badge da condividere",

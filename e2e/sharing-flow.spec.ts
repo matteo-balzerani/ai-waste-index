@@ -138,7 +138,7 @@ for (const locale of ["it", "en"] as const) {
     await expect(card).toContainText(body.methodologyVersion);
     await expect(card).toContainText(d.sharing.disclaimer);
     expect(
-      await card.evaluate(
+      await sharing.locator(".share-preview").evaluate(
         (element) => element.scrollWidth <= element.clientWidth,
       ),
     ).toBe(true);

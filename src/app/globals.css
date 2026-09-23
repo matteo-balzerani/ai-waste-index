@@ -195,3 +195,8 @@ progress { accent-color: var(--purple); width: 100%; margin: 1rem 0; }
 .share-formats { display: inline-flex; gap: .25rem; justify-self: start; padding: .25rem; border: 1px solid var(--border); border-radius: 14px; }
 .share-formats .secondary-action { border: 0; }
 .share-formats [aria-pressed="true"] { background: var(--foreground); color: white; }
+
+.share-preview { position: relative; min-width: 0; max-width: 540px; }
+.share-preview.badge { max-width: 360px; }
+.preview-scroll { overflow: auto; max-width: 100%; }
+.preview-scroll canvas { display: block; width: 100%; height: auto; }

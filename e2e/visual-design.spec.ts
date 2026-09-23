@@ -58,7 +58,7 @@ for (const locale of ["it", "en"] as const) {
           const card = page.getByRole('article', { name: format === 'Badge' ? d.sharing.badgeTitle : d.sharing.cardTitle });
           await expect(card).toContainText(result.methodologyVersion);
           await expect(card).toContainText(d.analysis.experimentalNotice);
-          expect(await card.evaluate(e => e.scrollWidth <= e.clientWidth)).toBe(true);
+          expect(await page.locator(".share-preview").evaluate(e => e.scrollWidth <= e.clientWidth)).toBe(true);
         }
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         await page.getByRole('button', { name: d.analysis.newAnalysis }).click();
