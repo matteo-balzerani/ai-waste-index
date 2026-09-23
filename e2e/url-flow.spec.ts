@@ -101,3 +101,31 @@ for (const locale of ["it", "en"] as const) {
     await expect(page.getByRole("checkbox")).toHaveCount(0);
   });
 }
+
+for (const locale of ["it", "en"] as const) {
+  test(`${locale}: Enter validates and submits the URL exactly once`, async ({ page }) => {
+    const d = getDictionary(locale);
+    let calls = 0;
+    let release!: () => void;
+    await page.route("**/api/extract-url", async route => {
+      calls++;
+      await new Promise<void>(resolve => { release = resolve; });
+      await route.fulfill({ json: { text: "Synthetic extracted text", requiresConfirmation: true, warnings: ["EXTRACTION_CONFIRMATION_REQUIRED"] } });
+    });
+    await page.goto(`/${locale}`);
+    await page.getByRole("tab", { name: "Link" }).click();
+    const input = page.getByRole("textbox");
+    await input.fill("invalid");
+    await input.press("Enter");
+    await expect(page.locator("main").getByRole("alert")).toHaveText(d.apiMessages.INVALID_INPUT);
+    expect(calls).toBe(0);
+    await input.fill("https://example.com/review");
+    await input.press("Enter");
+    await expect.poll(() => calls).toBe(1);
+    await input.press("Enter");
+    expect(calls).toBe(1);
+    release();
+    await expect(page.getByRole("checkbox")).toBeVisible();
+    await expect(page.getByRole("checkbox")).not.toBeChecked();
+  });
+}

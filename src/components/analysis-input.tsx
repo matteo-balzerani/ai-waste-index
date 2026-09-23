@@ -486,6 +486,7 @@ export function AnalysisInput({
               aria-describedby={hintId}
               autoComplete="off"
               id="input-url"
+              form="url-extraction-form"
               placeholder={activeCopy.title}
               inputMode="url"
               readOnly={pending !== null}
@@ -551,7 +552,7 @@ export function AnalysisInput({
           )}
         </form>
       ) : activeMode === "url" ? (
-        <form onSubmit={extract} aria-busy={pending !== null}>
+        <form id="url-extraction-form" noValidate onSubmit={extract} aria-busy={pending !== null}>
 
           {maxUrlChars !== null && (
             <p className="input-counter">
