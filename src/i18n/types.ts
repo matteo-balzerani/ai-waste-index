@@ -36,6 +36,7 @@ export interface Dictionary {
     cancel: string;
     newAnalysis: string;
     textLimit: string;
+    emptyInput: string;
     unavailableMode: string;
     resultTitle: string;
     scoreLabel: string;

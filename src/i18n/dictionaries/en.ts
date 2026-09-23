@@ -64,6 +64,7 @@ export const en = {
     pending: "Analysing…",
     cancel: "Cancel",
     newAnalysis: "New analysis",
+    emptyInput: "Paste some text.",
     textLimit: "Maximum characters",
     unavailableMode:
       "This input mode will be available in a later step of the local demo.",

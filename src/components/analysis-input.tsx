@@ -338,6 +338,19 @@ export function AnalysisInput({
     }
   };
 
+  const draftError = error !== null && [
+    "INVALID_INPUT", "INPUT_TOO_LARGE", "ESTIMATE_OUT_OF_DOMAIN",
+    "URL_BLOCKED", "URL_FETCH_FAILED", "EXTRACTION_FAILED",
+  ].includes(error);
+  const fieldInvalid = error === "INVALID_INPUT" || error === "INPUT_TOO_LARGE";
+  const errorMessage = error === "INVALID_INPUT" && activeMode === "text" && !(preview ?? draft).trim()
+    ? dictionary.analysis.emptyInput
+    : dictionary.apiMessages[error ?? "INTERNAL_ERROR"];
+  const changeDraft = (value: string) => {
+    setDraft(value);
+    if (draftError) setError(null);
+  };
+
   if (result)
     return (
       <AnalysisResult
@@ -368,6 +381,8 @@ export function AnalysisInput({
             </label>
             <textarea
               id="extracted-text"
+              aria-invalid={fieldInvalid || undefined}
+              aria-describedby={draftError ? "input-error" : undefined}
               value={preview}
               rows={12}
               autoComplete="off"
@@ -413,7 +428,7 @@ export function AnalysisInput({
             </button>
           </div>
           {pending && <p role="status">{dictionary.analysis.pending}</p>}
-          {error && <p role="alert">{dictionary.apiMessages[error]}</p>}
+          {error && <p id="input-error" role="alert">{errorMessage}</p>}
         </form>
 
       </section>
@@ -469,11 +484,12 @@ export function AnalysisInput({
 
           {activeMode === "text" && (
             <textarea
-              aria-describedby={hintId}
+              aria-describedby={`${hintId}${draftError ? " input-error" : ""}`}
+              aria-invalid={fieldInvalid || undefined}
               autoComplete="off"
               id="input-text"
               placeholder={activeCopy.title}
-              onChange={(event) => setDraft(event.currentTarget.value)}
+              onChange={(event) => changeDraft(event.currentTarget.value)}
               readOnly={pending !== null}
               spellCheck={false}
               rows={8}
@@ -483,14 +499,15 @@ export function AnalysisInput({
 
           {activeMode === "url" && (
             <input
-              aria-describedby={hintId}
+              aria-describedby={`${hintId}${draftError ? " input-error" : ""}`}
+              aria-invalid={fieldInvalid || undefined}
               autoComplete="off"
               id="input-url"
               form="url-extraction-form"
               placeholder={activeCopy.title}
               inputMode="url"
               readOnly={pending !== null}
-              onChange={(event) => setDraft(event.currentTarget.value)}
+              onChange={(event) => changeDraft(event.currentTarget.value)}
               type="url"
               value={draft}
             />
@@ -498,7 +515,8 @@ export function AnalysisInput({
 
           {activeMode === "screenshot" && (
             <input
-              aria-describedby={hintId}
+              aria-describedby={`${hintId}${draftError ? " input-error" : ""}`}
+              aria-invalid={fieldInvalid || undefined}
               id="input-screenshot"
               accept={screenshotMimeTypes.join(",")}
               disabled={!ocrLimits || maxTextCodePoints === null}
@@ -546,8 +564,8 @@ export function AnalysisInput({
           </div>
           {pending && <p role="status">{dictionary.analysis.pending}</p>}
           {(error || maxTextCodePoints === null) && (
-            <p role="alert">
-              {dictionary.apiMessages[error ?? "INTERNAL_ERROR"]}
+            <p id="input-error" role="alert">
+              {errorMessage}
             </p>
           )}
         </form>
@@ -587,8 +605,8 @@ export function AnalysisInput({
           </div>
           {pending && <p role="status">{dictionary.extraction.pending}</p>}
           {(error || maxUrlChars === null || maxTextCodePoints === null) && (
-            <p role="alert">
-              {dictionary.apiMessages[error ?? "INTERNAL_ERROR"]}
+            <p id="input-error" role="alert">
+              {errorMessage}
             </p>
           )}
         </form>
@@ -641,7 +659,7 @@ export function AnalysisInput({
             </>
           )}
           {(error || !ocrLimits || maxTextCodePoints === null) && (
-            <p role="alert">
+            <p id="input-error" role="alert">
               {error === "EXTRACTION_FAILED"
                 ? dictionary.ocr.failed
                 : error === "REQUEST_TIMEOUT"

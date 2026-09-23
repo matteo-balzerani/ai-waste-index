@@ -249,3 +249,24 @@ describe("one-shot text flow", () => {
     },
   );
 });
+
+it.each(["it", "en"] as const)("clears obsolete field errors without resubmitting in %s", locale => {
+  const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+  const { input, submit, dictionary } = setup(locale);
+  fireEvent.click(submit);
+  expect(screen.getByRole("alert")).toHaveTextContent(dictionary.analysis.emptyInput);
+  expect(input).toHaveAttribute("aria-invalid", "true");
+  expect(input).toHaveAccessibleDescription(expect.stringContaining(dictionary.analysis.emptyInput));
+  fireEvent.change(input, { target: { value: "Corrected text" } });
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(input).not.toHaveAttribute("aria-invalid");
+  expect(fetch).not.toHaveBeenCalled();
+});
+it("does not dismiss a service failure by editing content", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ error: { code: "ESTIMATOR_UNAVAILABLE" } }, { status: 503 })));
+  const { input, submit, dictionary } = setup(); start(input, submit);
+  await screen.findByRole("alert");
+  fireEvent.change(input, { target: { value: "Changed text" } });
+  expect(screen.getByRole("alert")).toHaveTextContent(dictionary.apiMessages.ESTIMATOR_UNAVAILABLE);
+  expect(input).not.toHaveAttribute("aria-invalid");
+});

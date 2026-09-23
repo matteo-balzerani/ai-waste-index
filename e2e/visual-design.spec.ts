@@ -28,7 +28,7 @@ for (const locale of ["it", "en"] as const) {
       await expect(page.getByLabel(d.inputShell.modes.screenshot.fieldLabel, { exact: true })).toBeVisible();
       await page.keyboard.press('Home');
       await page.getByRole('button', { name: d.analysis.submit }).click();
-      await expect(page.getByRole('main').getByRole('alert')).toHaveText(d.apiMessages.INVALID_INPUT);
+      await expect(page.getByRole('main').getByRole('alert')).toHaveText(d.analysis.emptyInput);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
     await page.getByText(d.inputShell.estimateLink, { exact: true }).focus();

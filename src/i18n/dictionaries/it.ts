@@ -64,6 +64,7 @@ export const it = {
     pending: "Analisi in corso…",
     cancel: "Annulla",
     newAnalysis: "Nuova analisi",
+    emptyInput: "Incolla un testo.",
     textLimit: "Caratteri massimi",
     unavailableMode:
       "Questo tipo di input sarà disponibile in una fase successiva della demo locale.",
