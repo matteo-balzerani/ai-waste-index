@@ -376,7 +376,7 @@ export function AnalysisInput({
         <p className="sr-only">{dictionary.apiMessages.EXTRACTION_CONFIRMATION_REQUIRED}</p>
         <form onSubmit={submit} aria-busy={pending !== null}>
           <div className="input-field">
-            <label htmlFor="extracted-text">
+            <label className="sr-only" htmlFor="extracted-text">
               {dictionary.extraction.previewLabel}
             </label>
             <textarea
@@ -384,7 +384,7 @@ export function AnalysisInput({
               aria-invalid={fieldInvalid || undefined}
               aria-describedby={draftError ? "input-error" : undefined}
               value={preview}
-              rows={12}
+              rows={Math.min(10, Math.max(3, preview.split(/\r?\n/).length))}
               autoComplete="off"
               spellCheck={false}
               readOnly={pending !== null}

@@ -97,3 +97,23 @@ test("pending analysis preserves the primary action position and allows cancella
   await expect(page.locator(".score-value")).toHaveCount(0);
 });
 
+test("short extraction previews stay compact and edits revoke confirmation", async ({ page }) => {
+  await page.route("**/api/extract-url", route => route.fulfill({ json: {
+    text: "Synthetic short text.", requiresConfirmation: true, warnings: ["EXTRACTION_CONFIRMATION_REQUIRED"],
+  } }));
+  for (const locale of ["it", "en"] as const) {
+    const d = getDictionary(locale);
+    await page.setViewportSize({ width: 320, height: 740 }); await page.goto(`/${locale}`);
+    await page.getByRole("tab", { name: "Link" }).click();
+    await page.getByRole("textbox").fill("https://example.com/review");
+    await page.getByRole("textbox").press("Enter");
+    const field = page.getByRole("textbox", { name: d.extraction.previewLabel });
+    await expect(field).toBeVisible();
+    expect((await field.boundingBox())!.height).toBeLessThan(200);
+    const analyse = page.getByRole("button", { name: d.extraction.analyze, exact: true });
+    await expect(analyse).toBeDisabled(); await expect(analyse).toBeInViewport({ ratio: 1 });
+    await page.getByRole("checkbox").check(); await expect(analyse).toBeEnabled();
+    await field.fill("Changed text."); await expect(page.getByRole("checkbox")).not.toBeChecked();
+    await expect(analyse).toBeDisabled();
+  }
+});

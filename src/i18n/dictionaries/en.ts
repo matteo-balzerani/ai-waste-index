@@ -97,10 +97,10 @@ export const en = {
     loadingLabel: "Extracting…",
     submit: "Extract text",
     pending: "Extracting text…",
-    previewTitle: "Review the extracted text",
+    previewTitle: "Review the text",
     previewLabel: "Text to analyse",
     confirmation: "I have reviewed and confirm this text.",
-    analyze: "Analyse confirmed text",
+    analyze: "Analyse",
     changeUrl: "Change URL",
     urlLimit: "Maximum URL characters",
     availability:
@@ -108,7 +108,7 @@ export const en = {
   },
   ocr: {
     pending: "Reading text…",
-    changeImage: "Choose another screenshot",
+    changeImage: "Change image",
     formats:
       "PNG / JPEG",
     limits:

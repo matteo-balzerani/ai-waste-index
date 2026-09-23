@@ -216,3 +216,7 @@ progress::-webkit-progress-value { background: var(--purple); border-radius: 8px
 progress::-moz-progress-bar { background: var(--purple); border-radius: 8px; }
 progress:indeterminate { background: repeating-linear-gradient(90deg, var(--purple) 0 12px, var(--border) 12px 24px); }
 .input-field:has(input[type="file"]:disabled):has(progress) { opacity: 1; }
+
+.extraction-preview textarea { field-sizing: content; min-height: 8rem; max-height: min(50svh, 24rem); }
+.extraction-preview .analysis-actions { display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; }
+.extraction-preview .analysis-actions button { min-width: 0; min-height: 4rem; line-height: 1.2; padding-inline: .75rem; }

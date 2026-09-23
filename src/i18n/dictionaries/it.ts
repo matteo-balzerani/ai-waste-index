@@ -97,10 +97,10 @@ export const it = {
     loadingLabel: "Estrazione…",
     submit: "Estrai il testo",
     pending: "Estrazione del testo…",
-    previewTitle: "Controlla il testo estratto",
+    previewTitle: "Controlla il testo",
     previewLabel: "Testo da analizzare",
     confirmation: "Ho controllato e confermo questo testo.",
-    analyze: "Analizza il testo confermato",
+    analyze: "Analizza",
     changeUrl: "Cambia URL",
     urlLimit: "Caratteri massimi dell’URL",
     availability:
@@ -108,7 +108,7 @@ export const it = {
   },
   ocr: {
     pending: "Lettura del testo…",
-    changeImage: "Scegli un altro screenshot",
+    changeImage: "Cambia screenshot",
     formats:
       "PNG / JPEG",
     limits:
