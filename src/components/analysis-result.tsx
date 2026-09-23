@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { PublicResult } from "@/contracts";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
+import { UiIcon } from "./ui-icon";
 import { ResultSharing } from "./result-sharing";
 
 export function AnalysisResult({ result, locale, copy, sharing, brand, onReset }: {
@@ -19,16 +20,16 @@ export function AnalysisResult({ result, locale, copy, sharing, brand, onReset }
   // Display formatting only: all values and the class come from the API.
   const format = new Intl.NumberFormat(locale, { maximumSignificantDigits: 3 });
   const metrics = [
-    { key: "energyWh", label: copy.energy, unit: "Wh", icon: "↯" },
-    { key: "co2eGrams", label: copy.carbon, unit: "gCO2e", icon: "◌" },
-    { key: "waterMl", label: copy.water, unit: "mL", icon: "◒" },
+    { key: "energyWh", label: copy.energy, unit: "Wh", icon: "energy" },
+    { key: "co2eGrams", label: copy.carbon, unit: "gCO2e", icon: "carbon" },
+    { key: "waterMl", label: copy.water, unit: "mL", icon: "water" },
   ] as const;
   return (
     <section className="analysis-result" aria-labelledby="result-title">
       <div className="result-heading">
         <h1 id="result-title" ref={heading} tabIndex={-1}>{copy.resultTitle}</h1>
         <button className="text-action" type="button" onClick={onReset}>
-          <span aria-hidden="true">↺</span> {copy.newAnalysis}
+          <UiIcon name="refresh" /> {copy.newAnalysis}
         </button>
       </div>
       <div className="result-ticket">
@@ -55,7 +56,7 @@ export function AnalysisResult({ result, locale, copy, sharing, brand, onReset }
           {metrics.map(({ key, label, unit, icon }) => {
             const metric = result.estimates[key];
             return <article className="metric" key={key}>
-              <h3><span className={`metric-icon ${key}`} aria-hidden="true">{icon}</span>{label}</h3>
+              <h3><span className={`metric-icon ${key}`} aria-hidden="true"><UiIcon name={icon} /></span>{label}</h3>
               <p className="metric-value"><span className="sr-only">{copy.estimatedValue} </span><strong>{format.format(metric.value)}</strong> <span>{unit}</span></p>
               <p className="metric-range"><span>{copy.estimatedRange}</span><br />{format.format(metric.low)}–{format.format(metric.high)} {unit}</p>
             </article>;

@@ -223,3 +223,6 @@ progress:indeterminate { background: repeating-linear-gradient(90deg, var(--purp
 
 .share-denominator { font-size: .4em; font-weight: 400; color: var(--muted); margin-left: .2em; }
 .share-card-class { transform: rotate(6deg); }
+
+.ui-icon { width: 20px; height: 20px; flex: none; }
+.metric-icon .ui-icon { width: 18px; height: 18px; }

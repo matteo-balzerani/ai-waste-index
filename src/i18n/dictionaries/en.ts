@@ -124,7 +124,7 @@ export const en = {
       "Copy the result or a compact badge, or prepare a card to share yourself.",
     context: "Estimated AI generation consumption",
     disclaimer: "Estimated, not measured.",
-    copyText: "Copy result",
+    copyText: "Copy text",
     copyBadge: "Copy badge text",
     open: "Share",
     close: "Close",
@@ -142,11 +142,10 @@ export const en = {
     pending: "Copying…",
     textCopied: "Result text copied.",
     badgeCopied: "Badge text copied.",
-    imageCopied: "Card image copied.",
+    imageCopied: "Image copied.",
     textFallback:
       "Automatic copying is unavailable. Select and copy the text below.",
-    imageFallback:
-      "The image could not be copied in this browser. Take a screenshot of the card instead.",
+    imageFallback: "The image could not be copied. You can take a screenshot of the preview.",
     manualLabel: "Text to copy manually",
   },
   apiMessages: {

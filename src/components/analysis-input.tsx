@@ -21,6 +21,7 @@ import {
 } from "@/contracts";
 import type { Locale } from "@/i18n/config";
 import { AnalysisResult } from "./analysis-result";
+import { UiIcon } from "./ui-icon";
 import { BrandMark } from "./brand-mark";
 
 import { recognizeScreenshot } from "@/browser/ocr/client";
@@ -466,7 +467,7 @@ export function AnalysisInput({
             tabIndex={activeMode === mode ? 0 : -1}
             type="button"
           >
-            <span aria-hidden="true" className="tab-icon">{mode === "text" ? "Tt" : mode === "url" ? "↗" : "▧"}</span>
+            <UiIcon className="tab-icon" name={mode === "text" ? "text" : mode === "url" ? "link" : "image"} />
             {copy.modes[mode].tabLabel}
           </button>
         ))}
@@ -553,7 +554,7 @@ export function AnalysisInput({
               type="submit"
               disabled={pending !== null || maxTextCodePoints === null}
             >
-              {pending ? dictionary.analysis.loadingLabel : dictionary.analysis.submit}<span aria-hidden="true">↗</span>
+              {pending ? dictionary.analysis.loadingLabel : dictionary.analysis.submit}
             </button>
             <button
                 style={{ visibility: pending ? "visible" : "hidden" }}
@@ -591,7 +592,7 @@ export function AnalysisInput({
                 maxTextCodePoints === null
               }
             >
-              {pending ? dictionary.extraction.loadingLabel : dictionary.extraction.submit}<span aria-hidden="true">↗</span>
+              {pending ? dictionary.extraction.loadingLabel : dictionary.extraction.submit}
             </button>
             <button
                 style={{ visibility: pending ? "visible" : "hidden" }}
