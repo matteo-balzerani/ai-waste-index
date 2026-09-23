@@ -56,6 +56,7 @@ describe("explicit user-initiated sharing", () => {
       );
       expect(writeText.mock.calls[0]![0]).toContain("Wh");
       expect(writeText.mock.calls[0]![0]).toContain(d.analysis.demoNotice);
+      fireEvent.click(screen.getByRole("button", { name: d.sharing.showBadge }));
       fireEvent.click(
         screen.getByRole("button", { name: d.sharing.copyBadge }),
       );
@@ -78,6 +79,7 @@ describe("explicit user-initiated sharing", () => {
       else
         clipboard(vi.fn().mockRejectedValue(new Error("permission details")));
       const { d } = setup();
+      fireEvent.click(screen.getByRole("button", { name: d.sharing.showBadge }));
       fireEvent.click(
         screen.getByRole("button", { name: d.sharing.copyBadge }),
       );
@@ -154,6 +156,22 @@ describe("explicit user-initiated sharing", () => {
       expect(screen.queryByRole("link")).not.toBeInTheDocument();
     },
   );
+  it("copies the compact graphic with explicit intent and keeps a readable fallback", async () => {
+    const { write } = clipboard();
+    encode.mockResolvedValue(new Blob(["png"], { type: "image/png" }));
+    const { d } = setup();
+    fireEvent.click(screen.getByRole("button", { name: d.sharing.showBadge }));
+    expect(write).not.toHaveBeenCalled();
+    const preview = screen.getByRole("article", { name: d.sharing.badgeTitle });
+    expect(preview).toHaveTextContent(sharingFixture.methodologyVersion);
+    fireEvent.click(screen.getByRole("button", { name: d.sharing.copyBadgeImage }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(d.sharing.imageCopied));
+    expect(encode.mock.calls.at(-1)![2]).toBe("badge");
+    write.mockRejectedValueOnce(new Error("denied"));
+    fireEvent.click(screen.getByRole("button", { name: d.sharing.copyBadgeImage }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(d.sharing.imageFallback));
+    expect(screen.getByRole("article", { name: d.sharing.badgeTitle })).toHaveTextContent(d.sharing.disclaimer);
+  });
   it("aborts encoding on unmount and ignores late clipboard completion", async () => {
     let complete!: () => void;
     const write = vi.fn(

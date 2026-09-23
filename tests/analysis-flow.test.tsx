@@ -83,8 +83,8 @@ describe("one-shot text flow", () => {
       expect(screen.getByText(fixture.methodologyVersion)).toBeInTheDocument();
       expect(screen.getByText("G")).toBeInTheDocument();
       expect(
-        screen.getByText(locale === "it" ? "1,25 Wh" : "1.25 Wh"),
-      ).toBeInTheDocument();
+        screen.getByText(locale === "it" ? "1,25" : "1.25").closest("p"),
+      ).toHaveTextContent(locale === "it" ? "1,25 Wh" : "1.25 Wh");
       expect(
         screen.getByText(locale === "it" ? /0,1–3 Wh/ : /0.1–3 Wh/),
       ).toBeInTheDocument();

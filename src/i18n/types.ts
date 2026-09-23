@@ -52,6 +52,7 @@ export interface Dictionary {
     disclaimer: string;
     demoNotice: string;
     experimentalNotice: string;
+    experimentalLabel: string;
     zeroScoreNotice: string;
     privacy: string;
   };
@@ -82,6 +83,9 @@ export interface Dictionary {
     copyText: string;
     copyBadge: string;
     showCard: string;
+    showBadge: string;
+    badgeTitle: string;
+    copyBadgeImage: string;
     copyImage: string;
     cardTitle: string;
     screenshotHint: string;

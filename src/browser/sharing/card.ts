@@ -1,4 +1,5 @@
 import type { ShareModel } from "./model";
+import { palette } from "@/presentation/theme";
 
 const WIDTH = 1080;
 const PADDING = 64;
@@ -17,8 +18,15 @@ function wrap(
       granularity: "grapheme",
     }).segment(paragraph)) {
       if (line && context.measureText(line + segment).width > maxWidth) {
-        lines.push(line);
-        line = "";
+        // Prefer a word boundary; retain whitespace and every grapheme verbatim.
+        const space = line.lastIndexOf(" ");
+        if (space > 0) {
+          lines.push(line.slice(0, space + 1));
+          line = line.slice(space + 1);
+        } else {
+          lines.push(line);
+          line = "";
+        }
       }
       line += segment;
     }
@@ -27,59 +35,92 @@ function wrap(
   return lines;
 }
 
-/** Same disclosure fields as the HTML card. Refuse an unbounded card, never crop its version/disclaimer. */
+export type ShareFormat = "card" | "badge";
+
+/** Adaptive height keeps every disclosure legible in both formats. No cropping. */
 export function drawShareCard(
   canvas: HTMLCanvasElement,
   model: ShareModel,
+  format: ShareFormat = "card",
 ): void {
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("CARD_UNAVAILABLE");
-  if (model.badgeText.length > MAX_COPY_LENGTH)
-    throw new Error("CARD_UNAVAILABLE");
+  if (!context || model.resultText.length > MAX_COPY_LENGTH) throw new Error("CARD_UNAVAILABLE");
+  const compact = format === "badge";
+  const width = compact ? 720 : WIDTH;
+  const padding = compact ? 40 : PADDING;
+  const available = width - padding * 2;
   context.font = "28px Arial, sans-serif";
-  const blocks = [
-    model.methodology,
-    model.disclaimer,
+  const footer = [model.methodology, model.disclaimer,
     ...(model.demoNotice ? [model.demoNotice] : []),
     ...(model.experimentalNotice ? [model.experimentalNotice] : []),
-  ].map((text) => wrap(context, text, WIDTH - PADDING * 2));
-  const height =
-    420 +
-    blocks.reduce((sum, lines) => sum + lines.length * 40 + 28, 0) +
-    PADDING;
+  ].map(text => wrap(context, text, available));
+  const metricWidth = (available - 48) / 3;
+  context.font = "26px Arial, sans-serif";
+  const metrics = compact ? [] : model.metrics.map(metric => ({
+    ...metric, lines: wrap(context, metric.range.replace(": ", ": \n"), metricWidth),
+  }));
+  // Measure values too: finite contract numbers may be much wider than normal examples.
+  context.font = "bold 30px Arial, sans-serif";
+  const metricValues = metrics.map(metric => wrap(context, metric.value, metricWidth));
+  const metricsHeight = compact ? 0 : 76 + Math.max(...metrics.map((metric, index) => metric.lines.length * 34 + metricValues[index]!.length * 38));
+  context.font = "28px Arial, sans-serif";
+  const contextLines = wrap(context, model.context, available);
+  const scoreTop = 132 + contextLines.length * 36;
+  const footerTop = scoreTop + 216 + metricsHeight;
+  const height = footerTop + footer.reduce((sum, lines) => sum + lines.length * 38 + 20, 0) + padding;
   if (height > MAX_HEIGHT) throw new Error("CARD_UNAVAILABLE");
-  canvas.width = WIDTH;
+  canvas.width = width;
   canvas.height = height;
-  context.fillStyle = "#f5f4ec";
-  context.fillRect(0, 0, WIDTH, height);
-  context.fillStyle = "#193e35";
-  context.fillRect(0, 0, WIDTH, 16);
+  context.fillStyle = compact ? palette.lime : palette.paper;
+  context.fillRect(0, 0, width, height);
+  context.fillStyle = compact ? palette.ink : palette.lime;
+  context.fillRect(0, 0, width, 14);
   context.textBaseline = "top";
-  context.fillStyle = "#193e35";
+  const box = (x: number, y: number, w: number, h: number, radius: number) => {
+    context.beginPath(); context.roundRect(x, y, w, h, radius); context.fill();
+  };
+  context.fillStyle = palette.ink;
+  box(padding, 48, 48, 48, 14);
+  context.fillStyle = palette.lime;
+  box(padding + 10, 65, 6, 16, 3);
+  box(padding + 21, 60, 6, 26, 3);
+  box(padding + 32, 65, 6, 16, 3);
+  context.fillStyle = palette.ink;
   context.font = "bold 34px Arial, sans-serif";
-  context.fillText(model.brand, PADDING, 60);
+  context.fillText(model.brand, padding + 64, 54);
   context.font = "28px Arial, sans-serif";
-  context.fillText(model.context, PADDING, 116);
-  context.fillStyle = "#232722";
+  contextLines.forEach((line, index) => context.fillText(line, padding, 120 + index * 36));
+  context.fillText(model.scoreLabel, padding, scoreTop + 10);
+  context.font = `bold ${compact ? 88 : 116}px Arial, sans-serif`;
+  context.fillText(model.score, padding, scoreTop + 57);
+  const classX = width - padding - 136;
+  context.fillStyle = palette.ink;
+  box(classX, scoreTop, 136, 156, 24);
+  context.fillStyle = palette.lime;
+  context.font = "26px Arial, sans-serif";
+  context.fillText(model.classLabel, classX + 24, scoreTop + 18);
+  context.font = "bold 92px Arial, sans-serif";
+  context.fillText(model.className, classX + 32, scoreTop + 48);
+  context.fillStyle = palette.ink;
+  metrics.forEach((metric, index) => {
+    const x = padding + index * (metricWidth + 24);
+    let y = scoreTop + 206;
+    context.font = "26px Arial, sans-serif";
+    context.fillText(metric.label, x, y);
+    y += 40;
+    context.font = "bold 30px Arial, sans-serif";
+    metricValues[index]!.forEach(line => { context.fillText(line, x, y); y += 38; });
+    context.font = "26px Arial, sans-serif";
+    metric.lines.forEach(line => { context.fillText(line, x, y); y += 34; });
+  });
+  context.fillStyle = palette.muted;
+  context.fillRect(padding, footerTop - 18, available, 1);
+  context.fillStyle = palette.ink;
   context.font = "28px Arial, sans-serif";
-  context.fillText(model.scoreLabel, PADDING, 202);
-  context.font = "bold 104px Arial, sans-serif";
-  context.fillText(model.score, PADDING, 246);
-  context.font = "28px Arial, sans-serif";
-  context.fillText(model.classLabel, 790, 202);
-  context.font = "bold 104px Arial, sans-serif";
-  context.fillText(model.className, 790, 246);
-  context.fillStyle = "#536158";
-  context.fillRect(PADDING, 388, WIDTH - PADDING * 2, 2);
-  let y = 420;
-  context.font = "28px Arial, sans-serif";
-  for (const [index, lines] of blocks.entries()) {
-    context.fillStyle = index === 2 ? "#7b361b" : "#232722";
-    for (const line of lines) {
-      context.fillText(line, PADDING, y);
-      y += 40;
-    }
-    y += 28;
+  let y = footerTop;
+  for (const lines of footer) {
+    for (const line of lines) { context.fillText(line, padding, y); y += 38; }
+    y += 20;
   }
 }
 
@@ -87,6 +128,7 @@ export function drawShareCard(
 export function encodeShareCard(
   model: ShareModel,
   signal: AbortSignal,
+  format: ShareFormat = "card",
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     if (signal.aborted) {
@@ -110,7 +152,7 @@ export function encodeShareCard(
     const timer = setTimeout(abort, 5000);
     signal.addEventListener("abort", abort, { once: true });
     try {
-      drawShareCard(canvas, model);
+      drawShareCard(canvas, model, format);
       canvas.toBlob(finish, "image/png");
     } catch {
       finish();

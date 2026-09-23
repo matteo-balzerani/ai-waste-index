@@ -21,6 +21,7 @@ import {
 } from "@/contracts";
 import type { Locale } from "@/i18n/config";
 import { AnalysisResult } from "./analysis-result";
+import { BrandMark } from "./brand-mark";
 
 import { recognizeScreenshot } from "@/browser/ocr/client";
 import { screenshotMimeTypes } from "@/browser/ocr/image";
@@ -61,6 +62,7 @@ export function AnalysisInput({
   const [error, setError] = useState<PublicErrorCode | null>(null);
   const activeRequest = useRef<AbortController | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const resetFocus = useRef(false);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
@@ -131,6 +133,7 @@ export function AnalysisInput({
   };
 
   const reset = () => {
+    resetFocus.current = true;
     activeRequest.current?.abort();
     activeRequest.current = null;
     setPending(null);
@@ -141,6 +144,13 @@ export function AnalysisInput({
     setConfirmed(false);
     setActiveMode("text");
   };
+
+  useEffect(() => {
+    if (resetFocus.current && !result && preview === null && pending === null) {
+      document.getElementById(`input-${activeMode}`)?.focus();
+      resetFocus.current = false;
+    }
+  }, [result, preview, pending, activeMode]);
 
   const hasPreview = preview !== null;
   useEffect(() => {
@@ -349,7 +359,8 @@ export function AnalysisInput({
         <h2 id="preview-title" ref={previewHeading} tabIndex={-1}>
           {dictionary.extraction.previewTitle}
         </h2>
-        <p>{dictionary.apiMessages.EXTRACTION_CONFIRMATION_REQUIRED}</p>
+
+        <p className="sr-only">{dictionary.apiMessages.EXTRACTION_CONFIRMATION_REQUIRED}</p>
         <form onSubmit={submit} aria-busy={pending !== null}>
           <div className="input-field">
             <label htmlFor="extracted-text">
@@ -404,7 +415,7 @@ export function AnalysisInput({
           {pending && <p role="status">{dictionary.analysis.pending}</p>}
           {error && <p role="alert">{dictionary.apiMessages[error]}</p>}
         </form>
-        <p className="privacy-notice">{dictionary.analysis.privacy}</p>
+
       </section>
     );
 
@@ -413,17 +424,12 @@ export function AnalysisInput({
 
   return (
     <section className="analysis-input" aria-labelledby="analysis-input-title">
-      <div className="analysis-input-heading">
-        <div>
-          <p className="section-label">{copy.sectionLabel}</p>
-          <h2 id="analysis-input-title">{copy.title}</h2>
-          <p>{copy.introduction}</p>
-        </div>
-        <a className="estimate-link" href="#estimate-notice-title">
-          {copy.estimateLink}
-        </a>
+      <div className="hero">
+        <div className="hero-symbol" aria-hidden="true"><BrandMark /></div>
+        <h1>{dictionary.landing.title}</h1>
+        <h2 id="analysis-input-title" className="sr-only">{copy.title}</h2>
       </div>
-
+      <div className="composer">
       <div
         aria-label={copy.modeSelectorLabel}
         className="input-tabs"
@@ -445,7 +451,7 @@ export function AnalysisInput({
             tabIndex={activeMode === mode ? 0 : -1}
             type="button"
           >
-            <span aria-hidden="true">0{index + 1}</span>
+            <span aria-hidden="true" className="tab-icon">{mode === "text" ? "Tt" : mode === "url" ? "↗" : "▧"}</span>
             {copy.modes[mode].tabLabel}
           </button>
         ))}
@@ -458,19 +464,15 @@ export function AnalysisInput({
         role="tabpanel"
         tabIndex={0}
       >
-        <div className="input-panel-copy">
-          <h3>{activeCopy.title}</h3>
-          <p>{activeCopy.description}</p>
-        </div>
-
         <div className="input-field">
-          <label htmlFor={`input-${activeMode}`}>{activeCopy.fieldLabel}</label>
+          <label className={activeMode === "screenshot" ? "upload-label" : "sr-only"} htmlFor={`input-${activeMode}`}>{activeMode === "screenshot" && <svg className="upload-icon" aria-hidden="true" viewBox="0 0 48 48"><path d="M24 34V14m-9 9 9-9 9 9" fill="none" stroke="currentColor" strokeWidth="2" /></svg>}{activeCopy.fieldLabel}</label>
 
           {activeMode === "text" && (
             <textarea
               aria-describedby={hintId}
               autoComplete="off"
               id="input-text"
+              placeholder={activeCopy.title}
               onChange={(event) => setDraft(event.currentTarget.value)}
               readOnly={pending !== null}
               spellCheck={false}
@@ -484,6 +486,7 @@ export function AnalysisInput({
               aria-describedby={hintId}
               autoComplete="off"
               id="input-url"
+              placeholder={activeCopy.title}
               inputMode="url"
               readOnly={pending !== null}
               onChange={(event) => setDraft(event.currentTarget.value)}
@@ -508,7 +511,7 @@ export function AnalysisInput({
             />
           )}
 
-          <p className="input-hint" id={hintId}>
+          <p className="sr-only" id={hintId}>
             {activeCopy.fieldHint}
           </p>
         </div>
@@ -517,8 +520,8 @@ export function AnalysisInput({
       {activeMode === "text" ? (
         <form onSubmit={submit} aria-busy={pending !== null}>
           {maxTextCodePoints !== null && (
-            <p className="input-hint">
-              {dictionary.analysis.textLimit}:{" "}
+            <p className="input-counter">
+              <span className="sr-only">{dictionary.analysis.textLimit}</span>{new Intl.NumberFormat(locale).format([...draft].length)} / {" "}
               {new Intl.NumberFormat(locale).format(maxTextCodePoints)}
             </p>
           )}
@@ -528,7 +531,7 @@ export function AnalysisInput({
               type="submit"
               disabled={pending !== null || maxTextCodePoints === null}
             >
-              {dictionary.analysis.submit}
+              {dictionary.analysis.submit}<span aria-hidden="true">↗</span>
             </button>
             {pending && (
               <button
@@ -549,9 +552,9 @@ export function AnalysisInput({
         </form>
       ) : activeMode === "url" ? (
         <form onSubmit={extract} aria-busy={pending !== null}>
-          <p className="input-hint">{dictionary.extraction.availability}</p>
+
           {maxUrlChars !== null && (
-            <p className="input-hint">
+            <p className="input-counter">
               {dictionary.extraction.urlLimit}:{" "}
               {new Intl.NumberFormat(locale).format(maxUrlChars)}
             </p>
@@ -566,7 +569,7 @@ export function AnalysisInput({
                 maxTextCodePoints === null
               }
             >
-              {dictionary.extraction.submit}
+              {dictionary.extraction.submit}<span aria-hidden="true">↗</span>
             </button>
             {pending && (
               <button
@@ -590,9 +593,9 @@ export function AnalysisInput({
         </form>
       ) : (
         <div aria-busy={pending === "ocr"}>
-          <p className="input-hint">{dictionary.ocr.formats}</p>
+          <p className="input-hint upload-formats">{dictionary.ocr.formats}</p>
           {ocrLimits && (
-            <p className="input-hint">
+            <p className="sr-only">
               {dictionary.ocr.limits
                 .replace(
                   "{bytes}",
@@ -648,7 +651,7 @@ export function AnalysisInput({
         </div>
       )}
 
-      <p className="privacy-notice">{copy.privacyNotice}</p>
+      </div>
     </section>
   );
 }

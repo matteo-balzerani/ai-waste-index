@@ -13,7 +13,7 @@ export const it = {
   },
   landing: {
     brand: "AI Waste Index",
-    title: "Stima il consumo di una generazione IA.",
+    title: "Incolla e scopri.",
     description:
       "Parti dal testo visibile per stimare energia, CO2e e acqua di una singola generazione nello scenario di riferimento.",
     estimateNoticeTitle: "Una stima, non un giudizio",
@@ -26,13 +26,13 @@ export const it = {
     introduction:
       "Parti da una sola fonte. La bozza esiste solo in questa pagina e non viene mai salvata.",
     modeSelectorLabel: "Tipo di input",
-    estimateLink: "Come interpretare la stima",
+    estimateLink: "Info e metodo",
     privacyNotice:
       "Cambiare tipo di input o lingua, lasciare la pagina o aggiornarla elimina la bozza corrente.",
     modes: {
       text: {
         tabLabel: "Testo",
-        title: "Incolla il testo",
+        title: "Incolla il testo qui…",
         description:
           "Usa direttamente il testo visibile. Il punteggio rappresenta il consumo energetico stimato nello scenario di riferimento.",
         fieldLabel: "Contenuto da analizzare",
@@ -40,8 +40,8 @@ export const it = {
           "Il testo inserito direttamente non richiede una conferma dell’estrazione.",
       },
       url: {
-        tabLabel: "URL",
-        title: "Inserisci un URL pubblico",
+        tabLabel: "Link",
+        title: "Incolla un link…",
         description:
           "Il testo leggibile della pagina verrà estratto tramite un flusso server protetto.",
         fieldLabel: "URL del contenuto pubblico",
@@ -53,35 +53,36 @@ export const it = {
         title: "Scegli uno screenshot",
         description:
           "Il riconoscimento del testo avverrà localmente nel browser; l’immagine non verrà caricata.",
-        fieldLabel: "Screenshot o immagine",
+        fieldLabel: "Scegli uno screenshot",
         fieldHint:
           "Il testo estratto sarà sempre modificabile e richiederà una conferma esplicita prima dell’analisi.",
       },
     },
   },
   analysis: {
-    submit: "Analizza il testo",
+    submit: "Analizza",
     pending: "Analisi in corso…",
     cancel: "Annulla",
-    newAnalysis: "Inizia una nuova analisi",
+    newAnalysis: "Nuova analisi",
     textLimit: "Caratteri massimi",
     unavailableMode:
       "Questo tipo di input sarà disponibile in una fase successiva della demo locale.",
     resultTitle: "Il tuo risultato",
     scoreLabel: "AI Waste Score",
     classLabel: "Classe",
-    estimatesTitle: "Stime ambientali derivate",
+    estimatesTitle: "Stime ambientali",
     estimatedValue: "Valore stimato",
     estimatedRange: "Intervallo dello scenario",
     energy: "Energia",
     carbon: "CO2e",
     water: "Acqua",
-    methodologyTitle: "Cosa viene stimato",
+    methodologyTitle: "Dettagli della stima",
     methodologyBody:
       "Il punteggio si basa sull’energia stimata in Wh per una singola generazione del testo visibile, senza bozze scartate o revisioni. CO2e e acqua sono stime separate; l’acqua comprende raffreddamento dei data center e produzione elettrica. Le assunzioni sono convenzionali e non modificabili qui. Il risultato non misura il processo originale né stabilisce se il testo sia stato generato da IA. Qualità, raffinatezza e utilità del contenuto non vengono valutate.",
-    methodologyVersion: "Versione della metodologia",
+    methodologyVersion: "Metodo",
     disclaimer:
       "Stime, non misurazioni. Gli intervalli descrivono variazioni nello scenario di riferimento, non intervalli di confidenza o l’incertezza complessiva.",
+    experimentalLabel: "Stima sperimentale",
     experimentalNotice: "Stima sperimentale: accuratezza fisica non ancora verificata.",
     zeroScoreNotice: "Un punteggio arrotondato a zero non significa consumo nullo.",
     demoNotice:
@@ -105,7 +106,7 @@ export const it = {
     pending: "Lettura del testo nel browser…",
     changeImage: "Scegli un altro screenshot",
     formats:
-      "Scegli un PNG o JPEG statico. Il testo viene letto in italiano e inglese, interamente nel browser.",
+      "PNG / JPEG",
     limits:
       "Limiti: {bytes} MB, {width} × {height} pixel per lato, {pixels} megapixel totali.",
     failed:
@@ -114,16 +115,19 @@ export const it = {
       "La lettura dell’immagine ha richiesto troppo tempo ed è stata interrotta. Prova uno screenshot più piccolo oppure incolla direttamente il testo.",
   },
   sharing: {
-    title: "Condividi questo risultato",
+    title: "Portalo con te.",
     description:
       "Copia il risultato o un badge compatto, oppure prepara una scheda da condividere tu.",
     context: "Consumo di generazione IA stimato",
     disclaimer: "Valori stimati, non misurati.",
-    copyText: "Copia il testo del risultato",
+    copyText: "Copia risultato",
     copyBadge: "Copia il testo del badge",
-    showCard: "Mostra la scheda",
-    copyImage: "Copia l’immagine della scheda",
-    cardTitle: "La tua scheda da condividere",
+    showBadge: "Badge",
+    badgeTitle: "Badge da condividere",
+    copyBadgeImage: "Copia immagine badge",
+    showCard: "Scheda",
+    copyImage: "Copia immagine",
+    cardTitle: "Scheda da condividere",
     screenshotHint:
       "Puoi anche fare uno screenshot di questa scheda. Includi la versione della metodologia e il disclaimer di stima.",
     pending: "Copia in corso…",

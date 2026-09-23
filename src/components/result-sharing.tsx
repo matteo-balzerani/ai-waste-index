@@ -5,9 +5,11 @@ import type { PublicResult } from "@/contracts";
 import type { Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
 import { createShareModel } from "@/browser/sharing/model";
+import { themeStyle } from "@/presentation/theme";
+import { BrandMark } from "./brand-mark";
 import { encodeShareCard } from "@/browser/sharing/card";
 
-type Action = "text" | "badge" | "image";
+type Action = "text" | "badge" | "image" | "badgeImage";
 export function ResultSharing({
   result,
   locale,
@@ -26,6 +28,7 @@ export function ResultSharing({
     [result, locale, analysis, copy, brand],
   );
   const [showCard, setShowCard] = useState(false);
+  const [format, setFormat] = useState<"card" | "badge">("card");
   const [pending, setPending] = useState<Action | null>(null);
   const [message, setMessage] = useState("");
   const [manualText, setManualText] = useState<string | null>(null);
@@ -49,7 +52,7 @@ export function ResultSharing({
   }, [manualText]);
   useEffect(() => {
     if (showCard) cardHeading.current?.focus();
-  }, [showCard]);
+  }, [showCard, format]);
 
   const copyOutput = async (action: Action) => {
     const controller = lifetime.current;
@@ -60,7 +63,7 @@ export function ResultSharing({
     setManualText(null);
     const text = action === "text" ? model.resultText : model.badgeText;
     try {
-      if (action === "image") {
+      if (action === "image" || action === "badgeImage") {
         if (
           !navigator.clipboard?.write ||
           typeof ClipboardItem === "undefined" ||
@@ -68,7 +71,7 @@ export function ResultSharing({
             !ClipboardItem.supports("image/png"))
         )
           throw new Error("COPY_UNAVAILABLE");
-        const png = encodeShareCard(model, controller.signal);
+        const png = encodeShareCard(model, controller.signal, action === "badgeImage" ? "badge" : "card");
         // Some implementations reject before consuming the Blob promise.
         void png.catch(() => {});
         // Invoke write in the click gesture; pass encoding as a promise to preserve activation.
@@ -82,7 +85,7 @@ export function ResultSharing({
       }
       if (!controller.signal.aborted)
         setMessage(
-          action === "image"
+          (action === "image" || action === "badgeImage")
             ? copy.imageCopied
             : action === "badge"
               ? copy.badgeCopied
@@ -90,7 +93,8 @@ export function ResultSharing({
         );
     } catch {
       if (!controller.signal.aborted) {
-        if (action === "image") {
+        if (action === "image" || action === "badgeImage") {
+          setFormat(action === "badgeImage" ? "badge" : "card");
           setShowCard(true);
           setMessage(copy.imageFallback);
         } else {
@@ -106,9 +110,9 @@ export function ResultSharing({
     }
   };
   return (
-    <section className="result-sharing" aria-labelledby="sharing-title">
+    <section style={themeStyle} className="result-sharing" aria-labelledby="sharing-title">
       <h3 id="sharing-title">{copy.title}</h3>
-      <p>{copy.description}</p>
+
       <div className="analysis-actions" aria-busy={pending !== null}>
         <button
           type="button"
@@ -118,20 +122,17 @@ export function ResultSharing({
         >
           {copy.copyText}
         </button>
-        <button
-          type="button"
-          className="secondary-action"
-          disabled={pending !== null}
-          onClick={() => void copyOutput("badge")}
-        >
-          {copy.copyBadge}
+        <button type="button" className="secondary-action"
+          aria-expanded={showCard && format === "badge"} aria-controls="share-card-panel"
+          onClick={() => { setFormat("badge"); setShowCard(true); }}>
+          {copy.showBadge}
         </button>
         <button
           type="button"
           className="secondary-action"
-          aria-expanded={showCard}
+          aria-expanded={showCard && format === "card"}
           aria-controls="share-card-panel"
-          onClick={() => setShowCard(true)}
+          onClick={() => { setFormat("card"); setShowCard(true); }}
         >
           {copy.showCard}
         </button>
@@ -156,21 +157,25 @@ export function ResultSharing({
       {showCard && (
         <div id="share-card-panel" className="share-card-panel">
           <h4 ref={cardHeading} tabIndex={-1}>
-            {copy.cardTitle}
+            {format === "badge" ? copy.badgeTitle : copy.cardTitle}
           </h4>
-          <article className="share-card" aria-label={copy.cardTitle}>
-            <p className="share-card-brand">{model.brand}</p>
-            <p>{model.context}</p>
+          <article className={`share-card ${format === "badge" ? "compact" : ""}`} aria-label={format === "badge" ? copy.badgeTitle : copy.cardTitle}>
+            <p className="share-card-brand"><BrandMark />{model.brand}</p>
+            <p className="share-card-context">{model.context}</p>
             <div className="share-card-score">
               <div>
                 <p>{model.scoreLabel}</p>
                 <strong>{model.score}</strong>
               </div>
-              <div>
+              <div className="share-card-class">
                 <p>{model.classLabel}</p>
                 <strong>{model.className}</strong>
               </div>
             </div>
+            {format === "card" && <div className="share-metrics">{model.metrics.map(metric =>
+              <p key={metric.label}>{metric.label}<strong>{metric.value}</strong><span>{metric.range}</span></p>
+            )}</div>}
+            <div className="share-card-footer">
             <p className="share-card-version">{model.methodology}</p>
             <p>{model.disclaimer}</p>
             {model.experimentalNotice && (
@@ -179,16 +184,18 @@ export function ResultSharing({
             {model.demoNotice && (
               <p className="share-card-demo">{model.demoNotice}</p>
             )}
+            </div>
           </article>
           <button
             type="button"
             className="secondary-action"
             disabled={pending !== null}
-            onClick={() => void copyOutput("image")}
+            onClick={() => void copyOutput(format === "badge" ? "badgeImage" : "image")}
           >
-            {copy.copyImage}
+            {format === "badge" ? copy.copyBadgeImage : copy.copyImage}
           </button>
-          <p className="input-hint">{copy.screenshotHint}</p>
+          {format === "badge" && <button type="button" className="text-action" disabled={pending !== null} onClick={() => void copyOutput("badge")}>{copy.copyBadge}</button>}
+
         </div>
       )}
     </section>

@@ -29,7 +29,14 @@ for (const locale of ["it", "en"] as const) {
     await expect(
       page.getByRole("heading", { name: dictionary.analysis.resultTitle }),
     ).toBeFocused();
-    await expect(page.getByText((body.methodologyVersion.startsWith("stub-") ? dictionary.analysis.demoNotice : dictionary.analysis.experimentalNotice))).toBeVisible();
+    const resultRegion = page.getByRole("region", { name: dictionary.analysis.resultTitle });
+    if (body.methodologyVersion.startsWith("stub-")) {
+      await expect(resultRegion.getByText(dictionary.analysis.demoNotice)).toBeVisible();
+    } else {
+      await expect(resultRegion.getByText(dictionary.analysis.experimentalLabel, { exact: true })).toBeVisible();
+      await resultRegion.getByText(dictionary.analysis.methodologyTitle, { exact: true }).click();
+      await expect(resultRegion.getByText(dictionary.analysis.experimentalNotice)).toBeVisible();
+    }
     await expect(
       page.getByText(body.methodologyVersion, { exact: true }),
     ).toBeVisible();

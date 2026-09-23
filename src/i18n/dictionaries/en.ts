@@ -13,7 +13,7 @@ export const en = {
   },
   landing: {
     brand: "AI Waste Index",
-    title: "Estimate the consumption of one AI generation.",
+    title: "Paste. Discover.",
     description:
       "Use the visible text to estimate energy, CO2e and water for one generation in the reference scenario.",
     estimateNoticeTitle: "An estimate, not a judgement",
@@ -26,13 +26,13 @@ export const en = {
     introduction:
       "Start with one source. Draft content exists only on this page and is never saved.",
     modeSelectorLabel: "Input type",
-    estimateLink: "How to interpret the estimate",
+    estimateLink: "Info & method",
     privacyNotice:
       "Changing input type or language, leaving the page or refreshing discards the current draft.",
     modes: {
       text: {
         tabLabel: "Text",
-        title: "Paste text",
+        title: "Paste your text here…",
         description:
           "Use the visible text directly. The score represents estimated energy consumption in the reference scenario.",
         fieldLabel: "Content to analyse",
@@ -40,8 +40,8 @@ export const en = {
           "Direct text does not require an extraction confirmation step.",
       },
       url: {
-        tabLabel: "URL",
-        title: "Enter a public URL",
+        tabLabel: "Link",
+        title: "Paste a link…",
         description:
           "The page’s readable text will be extracted through a protected server flow.",
         fieldLabel: "Public content URL",
@@ -53,35 +53,36 @@ export const en = {
         title: "Choose a screenshot",
         description:
           "Text recognition will run locally in your browser; the image will not be uploaded.",
-        fieldLabel: "Screenshot or image",
+        fieldLabel: "Choose a screenshot",
         fieldHint:
           "Extracted text will always be editable and require explicit confirmation before analysis.",
       },
     },
   },
   analysis: {
-    submit: "Analyse text",
+    submit: "Analyse",
     pending: "Analysing…",
     cancel: "Cancel",
-    newAnalysis: "Start a new analysis",
+    newAnalysis: "New analysis",
     textLimit: "Maximum characters",
     unavailableMode:
       "This input mode will be available in a later step of the local demo.",
     resultTitle: "Your result",
     scoreLabel: "AI Waste Score",
     classLabel: "Class",
-    estimatesTitle: "Derived environmental estimates",
+    estimatesTitle: "Environmental estimates",
     estimatedValue: "Estimated value",
     estimatedRange: "Scenario range",
     energy: "Energy",
     carbon: "CO2e",
     water: "Water",
-    methodologyTitle: "What this estimates",
+    methodologyTitle: "Estimate details",
     methodologyBody:
       "The score is based on estimated energy in Wh for one generation of the visible text, excluding discarded drafts and revisions. CO2e and water are separate estimates; water includes data-center cooling and electricity generation. Assumptions are conventional and cannot be adjusted here. The result does not measure the original process or establish AI authorship. Content quality, sophistication and usefulness are not assessed.",
-    methodologyVersion: "Methodology version",
+    methodologyVersion: "Method",
     disclaimer:
       "Estimated, not measured. Ranges describe variation within the reference scenario, not confidence intervals or total uncertainty.",
+    experimentalLabel: "Experimental estimate",
     experimentalNotice: "Experimental estimate: physical accuracy has not yet been verified.",
     zeroScoreNotice: "A score rounded to zero does not mean zero consumption.",
     demoNotice:
@@ -105,7 +106,7 @@ export const en = {
     pending: "Reading text in your browser…",
     changeImage: "Choose another screenshot",
     formats:
-      "Choose a static PNG or JPEG. Text is read in Italian and English, entirely in your browser.",
+      "PNG / JPEG",
     limits:
       "Limits: {bytes} MB, {width} × {height} pixels per side, {pixels} megapixels in total.",
     failed:
@@ -114,16 +115,19 @@ export const en = {
       "Reading the image took too long and was stopped. Try a smaller screenshot or paste the text directly.",
   },
   sharing: {
-    title: "Share this result",
+    title: "Take it with you.",
     description:
       "Copy the result or a compact badge, or prepare a card to share yourself.",
     context: "Estimated AI generation consumption",
     disclaimer: "Estimated, not measured.",
-    copyText: "Copy result text",
+    copyText: "Copy result",
     copyBadge: "Copy badge text",
-    showCard: "Show share card",
-    copyImage: "Copy card image",
-    cardTitle: "Your share card",
+    showBadge: "Badge",
+    badgeTitle: "Share badge",
+    copyBadgeImage: "Copy badge image",
+    showCard: "Card",
+    copyImage: "Copy image",
+    cardTitle: "Share card",
     screenshotHint:
       "You can also take a screenshot of this card. Include the methodology version and estimate disclaimer.",
     pending: "Copying…",

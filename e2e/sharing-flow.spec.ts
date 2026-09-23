@@ -38,7 +38,8 @@ for (const locale of ["it", "en"] as const) {
     for (const unit of ["Wh", "gCO2e", "mL"]) expect(text).toContain(unit);
     expect(text).not.toContain("Synthetic text");
     expect(text).not.toMatch(/https?:|data:|blob:/);
-    await sharing.getByRole("button", { name: d.sharing.copyBadge }).click();
+    await sharing.getByRole("button", { name: d.sharing.showBadge, exact: true }).click();
+    await sharing.getByRole("button", { name: d.sharing.copyBadge, exact: true }).click();
     await expect(sharing.getByRole("status")).toHaveText(d.sharing.badgeCopied);
     const badge = await page.evaluate(() => navigator.clipboard.readText());
     expect(badge).toContain(body.methodologyVersion);

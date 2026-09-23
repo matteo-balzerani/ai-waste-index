@@ -2,6 +2,8 @@ import { locales, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
 
 import { AnalysisInput } from "./analysis-input";
+import { themeStyle } from "@/presentation/theme";
+import { BrandMark } from "./brand-mark";
 
 import type { OcrLimits } from "@/browser/ocr/types";
 
@@ -23,9 +25,9 @@ export function Landing({
   const { landing, navigation } = dictionary;
 
   return (
-    <div className="site-shell">
+    <div className="site-shell" style={themeStyle}>
       <header className="site-header">
-        <span className="brand">{landing.brand}</span>
+        <span className="brand"><BrandMark />{landing.brand}</span>
         <nav aria-label={navigation.languageSelectorLabel}>
           <ul className="locale-list">
             {locales.map((candidate) => (
@@ -35,8 +37,9 @@ export function Landing({
                   className="locale-link"
                   href={`/${candidate}`}
                   hrefLang={candidate}
+                  aria-label={candidate === "it" ? navigation.italian : navigation.english}
                 >
-                  {candidate === "it" ? navigation.italian : navigation.english}
+                  {candidate.toUpperCase()}
                 </a>
               </li>
             ))}
@@ -45,11 +48,6 @@ export function Landing({
       </header>
 
       <main className="landing-main">
-        <section className="hero" aria-labelledby="page-title">
-          <h1 id="page-title">{landing.title}</h1>
-          <p>{landing.description}</p>
-        </section>
-
         <AnalysisInput
           key={locale}
           copy={dictionary.inputShell}
@@ -60,14 +58,21 @@ export function Landing({
           ocrLimits={ocrLimits}
         />
 
-        <aside
-          className="estimate-notice"
-          aria-labelledby="estimate-notice-title"
-        >
-          <h2 id="estimate-notice-title">{landing.estimateNoticeTitle}</h2>
-          <p>{landing.estimateNoticeBody}</p>
-        </aside>
       </main>
+      <footer className="site-footer">
+        <details className="estimate-notice">
+          <summary>{dictionary.inputShell.estimateLink}</summary>
+          <div className="disclosure-body">
+            <h2>{landing.estimateNoticeTitle}</h2>
+            <p>{landing.estimateNoticeBody}</p>
+            <p>{dictionary.analysis.methodologyBody}</p>
+            <p>{dictionary.analysis.experimentalNotice}</p>
+            <p>{dictionary.analysis.disclaimer}</p>
+            <p>{dictionary.inputShell.privacyNotice}</p>
+          </div>
+        </details>
+        <span className="footer-brand" aria-hidden="true">{landing.brand}</span>
+      </footer>
     </div>
   );
 }

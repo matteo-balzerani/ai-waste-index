@@ -23,6 +23,9 @@ function drawing() {
     fillStyle: "",
     textBaseline: "",
     fillRect: vi.fn(),
+    beginPath: vi.fn(),
+    roundRect: vi.fn(),
+    fill: vi.fn(),
     measureText: (value: string) => ({ width: [...value].length * 14 }),
     fillText: (value: string) => text.push(value),
   };
@@ -61,6 +64,21 @@ describe("local card rendering and lifecycle", () => {
       expect(canvas.height).toBeLessThanOrEqual(4096);
     },
   );
+  it.each(["card", "badge"] as const)("preserves zero disclosure and long version in %s", format => {
+    const { text, canvas } = drawing();
+    const d = getDictionary("it");
+    const data = createShareModel({ ...sharingFixture, score: 0,
+      methodologyVersion: "experimental-" + "long-👋".repeat(30) }, "it", d.analysis, d.sharing, d.landing.brand);
+    drawShareCard(canvas, data, format);
+    expect(text.join("")).toContain(data.methodology);
+    expect(text.join("")).toContain(d.analysis.zeroScoreNotice);
+    expect(text.join("")).toContain(data.experimentalNotice!);
+    expect(canvas.width).toBe(format === "badge" ? 720 : 1080);
+    for (const metric of data.metrics) {
+      if (format === "card") expect(text.join("")).toContain(metric.range);
+      else expect(text.join("")).not.toContain(metric.range);
+    }
+  });
   it("wraps a long Unicode version completely without dropping disclosure", () => {
     const { text, canvas } = drawing();
     const data = model("en", "version-" + "abcdefgh👋".repeat(20));

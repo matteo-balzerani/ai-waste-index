@@ -15,6 +15,7 @@ export interface ShareModel {
   experimentalNotice: string | null;
   badgeText: string;
   resultText: string;
+  metrics: Array<{ label: string; value: string; range: string }>;
 }
 // Presentation only. No input content, URL, image or estimator calculation is available here.
 export function createShareModel(
@@ -63,6 +64,11 @@ export function createShareModel(
     disclaimer,
     demoNotice,
     experimentalNotice,
+    metrics: metrics.map(([label, key, unit]) => {
+      const metric = result.estimates[key];
+      return { label, value: `${format.format(metric.value)} ${unit}`,
+        range: `${analysis.estimatedRange}: ${format.format(metric.low)}–${format.format(metric.high)} ${unit}` };
+    }),
     badgeText: [...summary, ...footer].join("\n"),
     resultText: [
       ...summary,
