@@ -441,7 +441,7 @@ export function AnalysisInput({
     <section className="analysis-input" aria-labelledby="analysis-input-title">
       <div className="hero">
         <div className="hero-symbol" aria-hidden="true"><BrandMark /></div>
-        <h1>{dictionary.landing.title}</h1>
+        <h1>{activeMode === "screenshot" ? dictionary.landing.screenshotTitle : dictionary.landing.title}</h1>
         <h2 id="analysis-input-title" className="sr-only">{copy.title}</h2>
       </div>
       <div className="composer">

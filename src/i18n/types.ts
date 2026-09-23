@@ -13,6 +13,7 @@ export interface Dictionary {
   landing: {
     brand: string;
     title: string;
+    screenshotTitle: string;
     description: string;
     estimateNoticeTitle: string;
     estimateNoticeBody: string;

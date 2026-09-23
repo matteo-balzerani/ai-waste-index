@@ -12,6 +12,7 @@ export const it = {
     english: "English",
   },
   landing: {
+    screenshotTitle: "Scegli e scopri.",
     brand: "AI Waste Index",
     title: "Incolla e scopri.",
     description:

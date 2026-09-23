@@ -12,6 +12,7 @@ export const en = {
     english: "English",
   },
   landing: {
+    screenshotTitle: "Choose. Discover.",
     brand: "AI Waste Index",
     title: "Paste. Discover.",
     description:
