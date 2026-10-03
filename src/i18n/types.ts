@@ -49,6 +49,17 @@ export interface Dictionary {
     energy: string;
     carbon: string;
     water: string;
+    generationNotice: string;
+    scopeNotice: string;
+    scoreBasis: string;
+    environmentNotice: string;
+    inferenceNotice: string;
+    comparabilityNotice: string;
+    demoLabel: string;
+    demoEnergy: string;
+    demoCarbon: string;
+    demoWater: string;
+    demoRange: string;
     methodologyTitle: string;
     methodologyBody: string;
     methodologyVersion: string;

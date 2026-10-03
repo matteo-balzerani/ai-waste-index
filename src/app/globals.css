@@ -256,3 +256,6 @@ progress:indeterminate { background: repeating-linear-gradient(90deg, var(--purp
   .share-dialog { height: 100dvh; padding: .75rem 1.5rem; }
   .share-dialog-controls { gap: .25rem; }
 }
+
+.result-disclosures, .environment-note { font-size: .8125rem; line-height: 1.6; color: var(--muted); overflow-wrap: anywhere; }
+.metric-icon { flex-shrink: 0; }

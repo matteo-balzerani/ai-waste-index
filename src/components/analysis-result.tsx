@@ -20,10 +20,11 @@ export function AnalysisResult({ result, locale, copy, sharing, brand, onReset }
   useEffect(() => { heading.current?.focus(); }, []);
   // Display formatting only: all values and the class come from the API.
   const format = new Intl.NumberFormat(locale, { maximumSignificantDigits: 3 });
+  const demo = result.methodologyVersion.startsWith("stub-");
   const metrics = [
-    { key: "energyWh", label: copy.energy, unit: "Wh", icon: "energy" },
-    { key: "co2eGrams", label: copy.carbon, unit: "gCO2e", icon: "carbon" },
-    { key: "waterMl", label: copy.water, unit: "mL", icon: "water" },
+    { key: "energyWh", label: demo ? copy.demoEnergy : copy.energy, unit: "Wh", icon: "energy" },
+    { key: "co2eGrams", label: demo ? copy.demoCarbon : copy.carbon, unit: "gCO2e", icon: "carbon" },
+    { key: "waterMl", label: demo ? copy.demoWater : copy.water, unit: "mL", icon: "water" },
   ] as const;
   return (
     <section className="analysis-result" aria-labelledby="result-title">
@@ -46,28 +47,32 @@ export function AnalysisResult({ result, locale, copy, sharing, brand, onReset }
         <div className="result-meta">
           <span className="estimate-chip">
             <span aria-hidden="true" className="status-dot" />
-            {result.methodologyVersion.startsWith("experimental-") ? copy.experimentalLabel : sharing.disclaimer}
+            {demo ? copy.demoLabel : copy.experimentalLabel}
           </span>
-          <span className="version-label">{result.methodologyVersion}</span>
+          <span className="version-label">{copy.methodologyVersion}: {result.methodologyVersion}</span>
         </div>
-        {result.methodologyVersion.startsWith("stub-") && <p className="demo-notice" role="note">{copy.demoNotice}</p>}
-        {result.score === 0 && result.estimates.energyWh.value > 0 && <p className="zero-notice" role="note">{copy.zeroScoreNotice}</p>}
-        <div className="metrics-heading"><h2>{copy.estimatesTitle}</h2></div>
+        {demo && <p className="demo-notice" role="note">{copy.demoNotice}</p>}
+        {result.score === 0 && <p className="zero-notice" role="note">{copy.zeroScoreNotice}</p>}
+        {!demo && <div className="result-disclosures">
+          <p>{copy.generationNotice} {copy.scoreBasis}</p>
+          <p>{copy.experimentalNotice} {sharing.disclaimer}</p>
+        </div>}
+        <div className="metrics-heading"><h2>{demo ? copy.demoLabel : copy.estimatesTitle}</h2></div>
         <div className="metric-grid">
           {metrics.map(({ key, label, unit, icon }) => {
             const metric = result.estimates[key];
-            return <article className="metric" key={key}>
+            return <article className="metric" key={key} aria-describedby={!demo && key !== "energyWh" ? "environment-note" : undefined}>
               <h3><span className={`metric-icon ${key}`} aria-hidden="true"><UiIcon name={icon} /></span>{label}</h3>
-              <p className="metric-value"><span className="sr-only">{copy.estimatedValue} </span><strong>{format.format(metric.value)}</strong> <span>{unit}</span></p>
-              <p className="metric-range"><span>{copy.estimatedRange}</span><br />{format.format(metric.low)}–{format.format(metric.high)} {unit}</p>
+              <p className="metric-value"><span className="sr-only">{demo ? copy.demoLabel : copy.estimatedValue} </span><strong>{format.format(metric.value)}</strong> <span>{unit}</span></p>
+              <p className="metric-range"><span>{demo ? copy.demoRange : copy.estimatedRange}{!demo && key !== "energyWh" ? "*" : ""}</span><br />{format.format(metric.low)}–{format.format(metric.high)} {unit}</p>
             </article>;
           })}
         </div>
+        {!demo && <p id="environment-note" className="environment-note" role="note">{copy.environmentNotice}</p>}
         <details className="methodology-copy">
           <summary>{copy.methodologyTitle}</summary>
           <div className="disclosure-body">
-            {result.methodologyVersion.startsWith("experimental-") && <p>{copy.experimentalNotice}</p>}
-            <p>{copy.methodologyBody}</p><p>{copy.disclaimer}</p><p>{copy.privacy}</p>
+            {!demo && <><p>{copy.methodologyBody}</p><p>{copy.disclaimer}</p><p>{copy.inferenceNotice}</p><p>{copy.comparabilityNotice}</p></>}<p>{copy.privacy}</p>
           </div>
         </details>
       </div>

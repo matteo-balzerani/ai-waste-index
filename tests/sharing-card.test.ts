@@ -39,10 +39,15 @@ afterEach(() => vi.useRealTimers());
 describe("local card rendering and lifecycle", () => {
   it.each(["it", "en"] as const)("draws experimental disclosure in %s PNG", locale => {
     const { text, canvas } = drawing();
-    const data = model(locale, "experimental-contract-fixture");
+    const data = model(locale, "preview-public-fixture");
     drawShareCard(canvas, data);
     expect(text.join("")).toContain(data.experimentalNotice!);
     expect(text.join("")).toContain(data.disclaimer);
+    for (const disclosure of data.cardFooter) expect(text.join("")).toContain(disclosure);
+    for (const metric of data.metrics) {
+      expect(text.join("")).toContain(metric.label);
+      expect(text.join("")).toContain(metric.range);
+    }
   });
   it.each(["it", "en"] as const)(
     "draws version/disclaimer/demo notice and unchanged score/class in %s PNG",

@@ -80,7 +80,7 @@ describe("explicit user-initiated sharing", () => {
       expect(writeText.mock.calls[1]![0]).toContain(
         sharingFixture.methodologyVersion,
       );
-      expect(writeText.mock.calls[1]![0]).toContain(d.sharing.disclaimer);
+      expect(writeText.mock.calls[1]![0]).toContain(d.analysis.demoNotice);
       expect(writeText.mock.calls[1]![0]).not.toContain("Wh");
     },
   );
@@ -166,7 +166,7 @@ describe("explicit user-initiated sharing", () => {
       );
       const card = screen.getByRole("article", { name: d.sharing.cardTitle });
       expect(card).toHaveTextContent(sharingFixture.methodologyVersion);
-      expect(card).toHaveTextContent(d.sharing.disclaimer);
+      expect(card).toHaveTextContent(d.analysis.demoNotice);
       expect(card).toHaveTextContent(d.analysis.demoNotice);
       expect(screen.queryByRole("link")).not.toBeInTheDocument();
     },
@@ -186,7 +186,7 @@ describe("explicit user-initiated sharing", () => {
     write.mockRejectedValueOnce(new Error("denied"));
     fireEvent.click(screen.getByRole("button", { name: d.sharing.copyBadgeImage }));
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent(d.sharing.imageFallback));
-    expect(screen.getByRole("article", { name: d.sharing.badgeTitle })).toHaveTextContent(d.sharing.disclaimer);
+    expect(screen.getByRole("article", { name: d.sharing.badgeTitle })).toHaveTextContent(d.analysis.demoNotice);
   });
   it("aborts encoding on unmount and ignores late clipboard completion", async () => {
     let complete!: () => void;
@@ -218,7 +218,7 @@ it("retains a readable equivalent when canvas preview fails", () => {
   const article = screen.getByRole("article", { name: d.sharing.badgeTitle });
   expect(article).toBeVisible();
   expect(article.parentElement).not.toHaveClass("sr-only");
-  expect(article).toHaveTextContent(d.sharing.disclaimer);
+  expect(article).toHaveTextContent(d.analysis.demoNotice);
   expect(screen.queryByRole("button", { name: d.sharing.zoomIn })).not.toBeInTheDocument();
 });
 

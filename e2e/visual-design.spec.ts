@@ -50,7 +50,7 @@ for (const locale of ["it", "en"] as const) {
         await page.getByRole('button', { name: d.analysis.submit }).click();
         await expect(page.locator('.class-badge strong')).toHaveText(className);
         await expect(page.locator('.score-value')).toHaveText(`${result.score}/100`);
-        await expect(page.locator('.version-label')).toHaveText(result.methodologyVersion);
+        await expect(page.locator('.version-label')).toHaveText(`${d.analysis.methodologyVersion}: ${result.methodologyVersion}`);
         if (index === 0) await expect(page.getByText(d.analysis.zeroScoreNotice)).toBeVisible();
         await page.getByRole('button', { name: d.sharing.open, exact: true }).click();
         for (const format of ['Badge', d.sharing.showCard]) {

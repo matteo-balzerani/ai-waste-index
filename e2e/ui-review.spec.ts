@@ -14,7 +14,9 @@ for (const locale of ["it", "en"] as const) {
       await page.getByRole("button", { name: d.analysis.submit, exact: true }).click();
       const share = page.getByRole("button", { name: d.sharing.open, exact: true });
       await expect(share).toBeVisible();
-      if (width !== 320) await expect(share).toBeInViewport({ ratio: 1 });
+      // Full scenario disclosures can increase result height; keep the action reachable.
+      await share.scrollIntoViewIfNeeded();
+      await expect(share).toBeInViewport({ ratio: 1 });
       await expect(page.getByRole("group", { name: d.sharing.formatLabel })).toHaveCount(0);
       await share.click();
       await expect(page.getByRole("group", { name: d.sharing.formatLabel })).toBeVisible();

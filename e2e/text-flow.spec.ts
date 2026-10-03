@@ -35,17 +35,15 @@ for (const locale of ["it", "en"] as const) {
     } else {
       await expect(resultRegion.getByText(dictionary.analysis.experimentalLabel, { exact: true })).toBeVisible();
       await resultRegion.getByText(dictionary.analysis.methodologyTitle, { exact: true }).click();
-      await expect(resultRegion.getByText(dictionary.analysis.experimentalNotice)).toBeVisible();
+      await expect(resultRegion.locator(".result-disclosures")).toContainText(dictionary.analysis.experimentalNotice);
     }
     await expect(
-      page.getByText(body.methodologyVersion, { exact: true }),
+      page.getByText(`${dictionary.analysis.methodologyVersion}: ${body.methodologyVersion}`, { exact: true }),
     ).toBeVisible();
     await expect(page.getByText(body.class, { exact: true })).toBeVisible();
-    for (const title of [
-      dictionary.analysis.energy,
-      dictionary.analysis.carbon,
-      dictionary.analysis.water,
-    ]) {
+    for (const title of (body.methodologyVersion.startsWith("stub-")
+      ? [dictionary.analysis.demoEnergy, dictionary.analysis.demoCarbon, dictionary.analysis.demoWater]
+      : [dictionary.analysis.energy, dictionary.analysis.carbon, dictionary.analysis.water])) {
       await expect(
         page.getByRole("heading", { name: title, exact: true }),
       ).toBeVisible();

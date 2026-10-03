@@ -212,14 +212,9 @@ export function ResultSharing({
               <p key={metric.label}>{metric.label}<strong>{metric.value}</strong><span>{metric.range}</span></p>
             )}</div>}
             <div className="share-card-footer">
-            <p>{model.disclaimer}</p>
-            {model.experimentalNotice && (
-              <p className="share-card-demo">{model.experimentalNotice}</p>
+            {(format === "badge" ? model.badgeFooter : model.cardFooter).map((text, index) =>
+              <p className={text === model.methodology ? "share-card-version" : undefined} key={index}>{text}</p>
             )}
-            {model.demoNotice && (
-              <p className="share-card-demo">{model.demoNotice}</p>
-            )}
-            <p className="share-card-version">{model.methodology}</p>
             </div>
           </article>
           </SharePreview>

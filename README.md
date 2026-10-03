@@ -8,9 +8,12 @@ excluding discarded drafts and revisions. It does not judge waste, quality, usef
 The local Text, URL and Screenshot flows are implemented. Paste text, extract a public page, or read a
 screenshot in the browser. Extracted text always requires explicit confirmation of its editable preview.
 Analysis uses the authenticated estimator service and displays score, class, scenario ranges and methodology
-disclosure in IT/EN. The score is based on estimated energy; CO2e and water remain separate. Water includes
-cooling and electricity-production consumption. Experimental results explicitly disclose unverified physical
-accuracy; scenario bounds are not confidence intervals or total uncertainty. Quota infrastructure is deferred until deployment is selected; this
+disclosure in IT/EN. The score is based on estimated GPU energy; CO₂e and water describe a conventional
+infrastructure share attributed to that energy. CPU, memory and other unquantified IT loads
+and their impacts are excluded, not zero. Both environmental metrics and ranges carry an
+accessible asterisk explanation. Water includes cooling and electricity-production consumption.
+All real results, full text, badges and cards disclose experimental status and unverified physical
+accuracy, regardless of version prefix; scenario bounds are not confidence intervals or total uncertainty. Quota infrastructure is deferred until deployment is selected; this
 version is for loopback-only local demonstration, not production.
 
 The repository must not contain scoring logic, estimator fallbacks, proprietary methodology, secrets, user-content
@@ -249,3 +252,8 @@ The application has no account, result history or application database. Content 
 not be written to browser storage, logs or server-side persistence. Estimator integration uses only the documented
 black-box HTTP contract from server-only code and environment-provided credentials. No browser code imports the
 client.
+
+Verification (2026-10-04): 440 unit/integration tests and 54 Chromium end-to-end tests pass.
+Typecheck/lint and the Webpack build pass. GPU/partial-allocation copy is covered in IT/EN result, text,
+badge, card, Canvas and HTML fallback with arbitrary public fixtures. Exact versions,
+one-generation scope, scenario ranges, zero-score notes and positive small values are preserved.

@@ -31,8 +31,8 @@ describe("public sharing presentation", () => {
         expect(text).toContain("23/100");
         expect(text).toContain(`${dictionary.analysis.classLabel} G`);
         expect(text).toContain(sharingFixture.methodologyVersion);
-        expect(text).toContain(dictionary.sharing.disclaimer);
-        expect(text).toContain(dictionary.sharing.context);
+        expect(text).toContain(dictionary.analysis.demoNotice);
+        expect(text).toContain(dictionary.analysis.demoLabel);
         expect(text).toContain(dictionary.analysis.demoNotice);
         expect(text).not.toMatch(/https?:|data:|blob:/);
       }

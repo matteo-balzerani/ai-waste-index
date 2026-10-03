@@ -50,19 +50,15 @@ export function drawShareCard(
   const padding = compact ? 48 : PADDING;
   const available = width - padding * 2;
   context.font = "26px Arial, sans-serif";
-  const footer = [model.disclaimer,
-    ...(model.experimentalNotice ? [model.experimentalNotice] : []),
-    ...(model.demoNotice ? [model.demoNotice] : []),
-    model.methodology,
-  ].map(text => wrap(context, text, available));
+  const footer = (compact ? model.badgeFooter : model.cardFooter).map(text => wrap(context, text, available));
   const metricWidth = (available - 48) / 3;
   const metrics = compact ? [] : model.metrics.map(metric => ({
-    ...metric, lines: wrap(context, metric.range.replace(": ", ": \n"), metricWidth),
+    ...metric, labels: wrap(context, metric.label, metricWidth), lines: wrap(context, metric.range.replace(": ", ": \n"), metricWidth),
   }));
   // Measure values too: finite contract numbers may be much wider than normal examples.
   context.font = "bold 34px Arial, sans-serif";
   const metricValues = metrics.map(metric => wrap(context, metric.value, metricWidth));
-  const metricsHeight = compact ? 0 : 40 + Math.max(...metrics.map((metric, index) => metric.lines.length * 34 + metricValues[index]!.length * 42));
+  const metricsHeight = compact ? 0 : Math.max(...metrics.map((metric, index) => metric.labels.length * 34 + 12 + metric.lines.length * 34 + metricValues[index]!.length * 42));
   context.font = "26px Arial, sans-serif";
   const contextLines = wrap(context, model.context, available);
   const contextTop = padding + 68;
@@ -127,8 +123,8 @@ export function drawShareCard(
     let y = metricsTop;
     context.fillStyle = palette.muted;
     context.font = "26px Arial, sans-serif";
-    context.fillText(metric.label, x, y);
-    y += 40;
+    metric.labels.forEach(line => { context.fillText(line, x, y); y += 34; });
+    y += 12;
     context.fillStyle = palette.ink;
     context.font = "bold 34px Arial, sans-serif";
     metricValues[index]!.forEach(line => { context.fillText(line, x, y); y += 42; });

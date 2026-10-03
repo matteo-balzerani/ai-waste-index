@@ -48,7 +48,7 @@ describe("one-shot text flow", () => {
     })));
     const { dictionary, input, submit } = setup(locale);
     start(input, submit);
-    expect(await screen.findByText(dictionary.analysis.experimentalNotice)).toBeInTheDocument();
+    expect(await screen.findByText(dictionary.analysis.experimentalNotice, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(dictionary.analysis.zeroScoreNotice)).toBeInTheDocument();
     expect(screen.queryByText(dictionary.analysis.demoNotice)).not.toBeInTheDocument();
   });
@@ -80,7 +80,7 @@ describe("one-shot text flow", () => {
       expect(
         screen.getByText(dictionary.analysis.demoNotice),
       ).toBeInTheDocument();
-      expect(screen.getByText(fixture.methodologyVersion)).toBeInTheDocument();
+      expect(screen.getByText(`${dictionary.analysis.methodologyVersion}: ${fixture.methodologyVersion}`)).toBeInTheDocument();
       expect(screen.getByText("G")).toBeInTheDocument();
       expect(
         screen.getByText(locale === "it" ? "1,25" : "1.25").closest("p"),
@@ -89,7 +89,7 @@ describe("one-shot text flow", () => {
         screen.getByText(locale === "it" ? /0,1–3 Wh/ : /0.1–3 Wh/),
       ).toBeInTheDocument();
       expect(
-        screen.getByText(dictionary.analysis.disclaimer),
+        screen.getByText(dictionary.analysis.demoNotice),
       ).toBeInTheDocument();
       expect(fetch).toHaveBeenCalledTimes(1);
       expect(fetch.mock.calls[0]![0]).toBe("/api/analyze");

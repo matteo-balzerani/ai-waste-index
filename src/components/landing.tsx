@@ -68,6 +68,9 @@ export function Landing({
             <p>{dictionary.analysis.methodologyBody}</p>
             <p>{dictionary.analysis.experimentalNotice}</p>
             <p>{dictionary.analysis.disclaimer}</p>
+            <p>{dictionary.analysis.environmentNotice}</p>
+            <p>{dictionary.analysis.inferenceNotice}</p>
+            <p>{dictionary.analysis.comparabilityNotice}</p>
             <p>{dictionary.inputShell.privacyNotice}</p>
           </div>
         </details>
