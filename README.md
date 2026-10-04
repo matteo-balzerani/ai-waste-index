@@ -3,15 +3,35 @@
 ## Advanced energy
 
 Advanced estimates energy for one declared text generation. Select a provider/model,
-enter output tokens (integer 1–1,000,000), and optionally duration (>0–3600 seconds).
-These are operational limits, not a validated accuracy domain. Optional reference text
-(up to 50,000 Unicode code points) stays in page memory and is never sent or tokenized.
+then paste the generated response (default) or select “I know the token count”.
+Pasted text is counted automatically in a same-origin browser worker; it never leaves
+the page. Manual counts accept integers 1–1,000,000 and include provider-specific usage
+help. Duration is optional (>0–3600 seconds). These are operational limits, not a
+validated accuracy domain. Text accepts at most 50,000 Unicode code points, without
+truncation, whitespace trimming or normalization. Blank/invalid Unicode is rejected.
+
+Local counting uses pinned `gpt-tokenizer@4.0.0` (`o200k_base`, MIT). Its encoding
+matches the selected GPT-4o, GPT-4o-mini and GPT-5 models; for all other selections
+it is explicitly a rough reference-tokenizer approximation, not their native count.
+Neither path derived from text includes hidden reasoning/formatting tokens. Energy
+may consequently be too low, and its interval does not quantify these omissions or
+token-count error. Prefer provider usage when available. The UI snapshots declared
+versus compatible-text versus approximate-text provenance alongside each result.
+
+The worker loads only for valid text while the text path is active, after a 350 ms
+debounce. It terminates on completion, error, 10-second deadline, draft/path/mode
+change or unmount. Retry or manual entry is available if counting fails. Path changes
+preserve drafts only in memory and clear results; reset clears both. The tokenizer
+is bundled locally; no provider calls, API keys or runtime vocabulary downloads.
+See [third-party notices](public/tokenizer-notices.txt), also served at `/tokenizer-notices.txt`, and
+[the upstream tokenizer](https://github.com/niieani/gpt-tokenizer).
 No provider/model is selected automatically.
 
 The authenticated estimator supplies its available catalog through `GET /api/advanced/models`;
 `POST /api/advanced/estimate` accepts only provider, model, outputTokens and optional
 requestLatencySeconds. Results preserve a native point or low/high range in Wh, with
-source/version, duration provenance and localized warnings. No score, CO2e, water or
+source/version, duration provenance and localized warnings. Token provenance is
+browser-only metadata; the service does not receive or certify it. No score, CO2e, water or
 sharing is included. EcoLogits energy covers modeled server and data-center overhead;
 it is not the author's measured consumption, a confidence interval or full lifecycle energy.
 

@@ -4,6 +4,8 @@ import { AdvancedInput } from "@/components/advanced-input";
 import { Landing } from "@/components/landing";
 import { getDictionary } from "@/i18n/dictionaries";
 import { advancedCatalogFixture as catalog, advancedResultFixture as result } from "./helpers/advanced";
+import { countTokensLocally } from "@/browser/tokens/client";
+vi.mock("@/browser/tokens/client", () => ({ countTokensLocally: vi.fn() }));
 import { sharingFixture } from "./helpers/sharing";
 
 const d = getDictionary("en"), c = d.advanced;
@@ -11,22 +13,91 @@ const response = (value: unknown) => new Response(JSON.stringify(value), { statu
 const change = (name: string, value: string) => fireEvent.change(screen.getByLabelText(name), { target: { value } });
 const click = (name: string) => fireEvent.click(screen.getByRole("button", { name }));
 function mock() {
+  vi.mocked(countTokensLocally).mockReset().mockResolvedValue(7);
   const fetch = vi.fn().mockImplementation((url: string) => Promise.resolve(response(
     url.endsWith("models") ? catalog : url === "/api/analyze" ? sharingFixture : result)));
   vi.stubGlobal("fetch", fetch); return fetch;
 }
 async function fill(copy = c) {
   await screen.findByRole("option", { name: "Provider A" });
-  change(copy.provider, "provider-a"); change(copy.model, "model-a"); change(copy.outputTokens, "500");
+  change(copy.provider, "provider-a"); change(copy.model, "model-a");
+  fireEvent.click(screen.getByRole("radio", { name: copy.fromTokens })); change(copy.outputTokens, "500");
 }
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("Advanced energy", () => {
-  it.each(["it", "en"] as const)("estimates with optional local text and no persistence in %s", async locale => {
+  it.each(["it", "en"] as const)("counts pasted text locally and snapshots its provenance in %s", async locale => {
+    const fetch = mock(), dictionary = getDictionary(locale), copy = dictionary.advanced;
+    render(<AdvancedInput dictionary={dictionary} locale={locale} />);
+    expect(screen.getByRole("radio", { name: copy.fromText })).toBeChecked();
+    await screen.findByRole("option", { name: "Provider A" });
+    change(copy.provider, "provider-a"); change(copy.model, "model-a");
+    change(copy.generatedText, "  Risposta 😀 con <|endoftext|>\n");
+    expect(screen.getByRole("button", { name: copy.submit })).toBeDisabled();
+    expect(await screen.findByTestId("advanced-token-count")).toHaveTextContent("7");
+    expect(countTokensLocally).toHaveBeenCalledWith("  Risposta 😀 con <|endoftext|>\n", expect.any(AbortSignal));
+    expect(fetch).toHaveBeenCalledTimes(1); click(copy.submit);
+    await screen.findByTestId("advanced-energy");
+    expect(JSON.parse(fetch.mock.calls[1]![1].body)).toEqual({ provider: "provider-a", model: "model-a", outputTokens: 7 });
+    expect(screen.getByText(copy.referenceTokens)).toBeInTheDocument();
+    expect(screen.getAllByText(copy.hiddenTokens)).toHaveLength(2);
+    fireEvent.click(screen.getByRole("radio", { name: copy.fromTokens }));
+    expect(screen.queryByTestId("advanced-energy")).not.toBeInTheDocument();
+    change(copy.outputTokens, "29"); click(copy.submit); await screen.findByTestId("advanced-energy");
+    expect(screen.getByText(copy.declaredTokens)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: copy.fromText }));
+    expect(screen.getByLabelText(copy.generatedText)).toHaveValue("  Risposta 😀 con <|endoftext|>\n");
+    click(copy.reset); expect(screen.getByLabelText(copy.generatedText)).toHaveValue("");
+    expect(screen.queryByTestId("advanced-token-count")).not.toBeInTheDocument();
+  });
+  it("explains compatible text counts and provider-specific manual usage", async () => {
+    const fetch = mock(); fetch.mockResolvedValueOnce(response({ ...catalog, providers: [
+      { id: "openai", label: "OpenAI", models: ["gpt-5"] },
+      { id: "google_genai", label: "Google", models: ["gemini-2.5-flash"] },
+    ] }));
+    render(<AdvancedInput dictionary={d} />); await screen.findByRole("option", { name: "OpenAI" });
+    change(c.provider, "openai"); change(c.model, "gpt-5"); change(c.generatedText, "Local response");
+    await screen.findByTestId("advanced-token-count"); expect(screen.getByText(c.matchedHint)).toBeInTheDocument();
+    click(c.submit); await screen.findByTestId("advanced-energy");
+    expect(screen.getByText(c.matchedTokens)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: c.fromTokens }));
+    expect(screen.getByText(c.usageHints.openai)).toBeInTheDocument();
+    change(c.provider, "google_genai"); expect(screen.getByText(c.usageHints.google_genai)).toBeInTheDocument();
+  });
+  it.each(["", " \n\t", "\uD800"])("rejects invalid pasted text %j without counting or sending", async text => {
+    const fetch = mock(); render(<AdvancedInput dictionary={d} />); await fill();
+    fireEvent.click(screen.getByRole("radio", { name: c.fromText })); change(c.generatedText, text); click(c.submit);
+    expect(screen.getByRole("alert")).toBeInTheDocument(); expect(countTokensLocally).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+  it("offers count retry, retains the text and never substitutes a manual draft", async () => {
+    const fetch = mock(); vi.mocked(countTokensLocally).mockRejectedValueOnce(new Error("synthetic"));
+    render(<AdvancedInput dictionary={d} />); await fill();
+    fireEvent.click(screen.getByRole("radio", { name: c.fromText })); change(c.generatedText, "Local draft");
+    await screen.findByText(c.tokenizerUnavailable); click(c.submit);
+    expect(fetch).toHaveBeenCalledTimes(1); expect(screen.queryByTestId("advanced-energy")).not.toBeInTheDocument();
+    click(c.retryTokens); await screen.findByTestId("advanced-token-count"); click(c.submit);
+    await screen.findByTestId("advanced-energy"); expect(JSON.parse(fetch.mock.calls[1]![1].body).outputTokens).toBe(7);
+  });
+  it("cancels stale counting on edits and path changes", async () => {
+    mock(); let finish!: (count: number) => void;
+    vi.mocked(countTokensLocally).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    render(<AdvancedInput dictionary={d} />); await fill();
+    fireEvent.click(screen.getByRole("radio", { name: c.fromText })); change(c.generatedText, "Old draft");
+    await waitFor(() => expect(countTokensLocally).toHaveBeenCalledOnce());
+    const oldSignal = vi.mocked(countTokensLocally).mock.calls[0]![1];
+    change(c.generatedText, "New draft"); expect(oldSignal.aborted).toBe(true);
+    await act(async () => finish(99)); expect(screen.queryByTestId("advanced-token-count")).not.toBeInTheDocument();
+    expect(await screen.findByTestId("advanced-token-count")).toHaveTextContent("7");
+    fireEvent.click(screen.getByRole("radio", { name: c.fromTokens }));
+    expect(vi.mocked(countTokensLocally).mock.calls[1]![1].aborted).toBe(true);
+    expect(screen.getByLabelText(c.outputTokens)).toHaveValue("500");
+  });
+  it.each(["it", "en"] as const)("estimates declared tokens with no persistence in %s", async locale => {
     const fetch = mock(), storage = vi.spyOn(Storage.prototype, "setItem");
     const dictionary = getDictionary(locale), copy = dictionary.advanced;
     render(<AdvancedInput dictionary={dictionary} locale={locale} />);
-    await fill(copy); change(copy.reference, "Synthetic local-only reference"); click(copy.submit);
+    await fill(copy); click(copy.submit);
     expect(await screen.findByRole("heading", { name: copy.resultTitle })).toHaveFocus();
     expect(screen.getByTestId("advanced-energy")).toHaveTextContent(locale === "it" ? "0,12–0,34 Wh" : "0.12–0.34 Wh");
     expect(JSON.parse(fetch.mock.calls[1]![1].body)).toEqual({ provider: "provider-a", model: "model-a", outputTokens: 500 });
@@ -54,11 +125,12 @@ describe("Advanced energy", () => {
     change(c.duration, value); click(c.submit);
     expect(screen.getByRole("alert")).toHaveTextContent(c.durationError); expect(fetch).toHaveBeenCalledTimes(1);
   });
-  it("requires explicit selection, clears model on provider change and rejects long reference", async () => {
+  it("requires explicit selection, clears model on provider change and rejects long text", async () => {
     const fetch = mock(); render(<AdvancedInput dictionary={d} />); await fill();
     change(c.provider, "provider-b"); expect(screen.getByLabelText(c.model)).toHaveValue("");
     click(c.submit); expect(screen.getByRole("alert")).toHaveTextContent(c.selectionError);
-    change(c.model, "model-c"); change(c.reference, "😀".repeat(50001)); click(c.submit);
+    change(c.model, "model-c"); fireEvent.click(screen.getByRole("radio", { name: c.fromText }));
+    change(c.generatedText, "😀".repeat(50001)); click(c.submit);
     expect(screen.getByRole("alert")).toHaveTextContent(c.tooLarge); expect(fetch).toHaveBeenCalledTimes(1);
   });
   it.each([
@@ -88,14 +160,14 @@ describe("mode lifecycle", () => {
   it("loads no Advanced data while hidden, preserves drafts, clears on lifecycle/locale", async () => {
     const fetch = mock(); const view = render(landing()); expect(fetch).not.toHaveBeenCalled();
     change(d.inputShell.modes.text.fieldLabel, "Blame draft"); click(d.productModes.advanced); await fill();
-    change(c.reference, "Local draft"); click(c.submit); await screen.findByTestId("advanced-energy");
+    click(c.submit); await screen.findByTestId("advanced-energy");
     click(d.productModes.blame); expect(screen.getByLabelText(d.inputShell.modes.text.fieldLabel)).toHaveValue("Blame draft");
     click(d.productModes.advanced); expect(screen.getByTestId("advanced-energy")).toBeVisible();
     fireEvent(window, new Event("pagehide")); fireEvent(window, new Event("pageshow"));
-    click(d.productModes.advanced); await fill(); expect(screen.getByLabelText(c.reference)).toHaveValue("");
+    click(d.productModes.advanced); await screen.findByRole("option", { name: "Provider A" }); expect(screen.getByLabelText(c.generatedText)).toHaveValue("");
     view.rerender(landing("it")); expect(screen.getByRole("button", { name: "Blame" })).toHaveAttribute("aria-pressed", "true");
     click(getDictionary("it").productModes.advanced); await screen.findByRole("option", { name: "Provider A" });
-    expect(screen.getByLabelText(getDictionary("it").advanced.outputTokens)).toHaveValue("");
+    expect(screen.getByLabelText(getDictionary("it").advanced.generatedText)).toHaveValue("");
   });
   it("cancels Advanced work on mode switch and ignores stale replies", async () => {
     const fetch = mock(); render(landing()); click(d.productModes.advanced); await fill();

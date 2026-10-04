@@ -14,8 +14,6 @@ export const en = {
     "tokenHint": "Enter the declared count for one generation. Visible text may omit generated tokens. Operational limit: 1,000,000 tokens.",
     "duration": "Duration in seconds (optional)",
     "durationHint": "If unknown, leave blank: it will be estimated. Enter a value greater than zero, up to 3,600 seconds.",
-    "reference": "Reference text (optional)",
-    "referenceHint": "Stays only in this page. It is not sent, analysed or used to count tokens.",
     "submit": "Estimate energy",
     "pending": "Estimating…",
     "cancel": "Cancel",
@@ -25,7 +23,7 @@ export const en = {
     "selectionError": "Select a provider and model from the list.",
     "tokenError": "Enter a whole number of tokens between 1 and 1,000,000.",
     "durationError": "Enter a duration greater than zero and no more than 3,600 seconds, or leave blank.",
-    "tooLarge": "Reference text exceeds 50,000 characters. Shorten it manually; nothing is truncated.",
+    "tooLarge": "The response exceeds 50,000 characters. Shorten it manually; nothing is truncated.",
     "resultTitle": "Energy estimate",
     "energy": "Estimated energy",
     "range": "Estimated range",
@@ -45,8 +43,37 @@ export const en = {
     "warnings": {
         "MODEL_ARCHITECTURE_ASSUMED": "This model’s architecture is not public: EcoLogits estimates its characteristics.",
         "TEXT_ONLY_ESTIMATE": "This model supports multiple modalities, but this estimate covers text generation only."
+    },
+    "inputPath": "How would you like to provide the output?",
+    "fromText": "Paste the response",
+    "fromTokens": "I know the token count",
+    "generatedText": "Generated response",
+    "textHint": "Paste only one AI response, without the prompt or conversation. Up to 50,000 characters. Token counting runs in your browser; the text is not sent.",
+    "emptyText": "Paste the generated response to count its tokens.",
+    "invalidText": "The text contains invalid Unicode characters. Correct it before counting.",
+    "counting": "Counting tokens locally…",
+    "tokenizerUnavailable": "Local token counting is unavailable. Retry or use a known token count.",
+    "retryTokens": "Retry token count",
+    "tokenProvenance": "Token count source",
+    "declaredTokens": "Declared by you",
+    "matchedTokens": "Counted from visible text",
+    "referenceTokens": "Approximated from visible text",
+    "matchedHint": "The selected model uses the compatible o200k_base tokenizer. This counts the pasted text, not the provider’s complete usage.",
+    "approximationHint": "Rough approximation: we use the o200k_base reference tokenizer, not this model’s own tokenizer. The difference has not been validated. Use the provider’s usage count when available.",
+    "selectForTokenHint": "Select a model to see whether its tokenizer matches or the count is a rough approximation.",
+    "hiddenTokens": "Visible text excludes hidden reasoning and other non-visible tokens. The energy estimate may be too low; its interval does not cover this missing information or token-count error.",
+    "usageHelp": "Where can I find the token count?",
+    "usageDocs": "Official usage documentation",
+    "tokenizerDetails": "Text is counted locally with",
+    "usageHints": {
+        "generic": "Find the output count for one generation in its API response or usage details. Do not use input tokens, a maximum-token setting or the whole conversation total. If you only have the response text, choose “Paste the response”.",
+        "openai": "In the API response: usage.output_tokens for Responses, or usage.completion_tokens for Chat Completions. These totals include reasoning when generated: do not add it again. If you only have the ChatGPT response text, choose “Paste the response”.",
+        "anthropic": "In the Messages API response, use usage.output_tokens. Do not use input_tokens or max_tokens. If you only have the Claude response text, choose “Paste the response”.",
+        "google_genai": "For one GenerateContent candidate, use usageMetadata.candidatesTokenCount plus thoughtsTokenCount when present. In the Python SDK: usage_metadata.candidates_token_count and thoughts_token_count. Do not use totalTokenCount, which includes the prompt. If you only have the text, choose “Paste the response”.",
+        "mistralai": "In the Chat API response, use usage.completion_tokens for one generation. Do not use prompt_tokens or total_tokens. If you only have the response text, choose “Paste the response”."
     }
 },
+
   metadata: {
     title: "AI Waste Index",
     description:

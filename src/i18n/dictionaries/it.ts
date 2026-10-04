@@ -14,8 +14,6 @@ export const it = {
     "tokenHint": "Riporta il conteggio dichiarato per una sola generazione. Il testo visibile può non includere tutti i token prodotti. Limite operativo: 1.000.000 token.",
     "duration": "Durata in secondi (facoltativa)",
     "durationHint": "Se non la conosci, lascia vuoto: verrà stimata. Inserisci un valore maggiore di zero, fino a 3.600 secondi.",
-    "reference": "Testo di riferimento (facoltativo)",
-    "referenceHint": "Resta soltanto in questa pagina. Non viene inviato, analizzato o usato per contare i token.",
     "submit": "Stima energia",
     "pending": "Stima in corso…",
     "cancel": "Annulla",
@@ -25,7 +23,7 @@ export const it = {
     "selectionError": "Seleziona un provider e un modello dall’elenco.",
     "tokenError": "Inserisci un numero intero di token compreso tra 1 e 1.000.000.",
     "durationError": "Inserisci una durata maggiore di zero e non superiore a 3.600 secondi, oppure lascia vuoto.",
-    "tooLarge": "Il testo di riferimento supera 50.000 caratteri. Riducilo manualmente: nulla viene troncato.",
+    "tooLarge": "La risposta supera 50.000 caratteri. Riducila manualmente: nulla viene troncato.",
     "resultTitle": "Stima energetica",
     "energy": "Energia stimata",
     "range": "Intervallo stimato",
@@ -45,8 +43,37 @@ export const it = {
     "warnings": {
         "MODEL_ARCHITECTURE_ASSUMED": "L’architettura di questo modello non è pubblica: EcoLogits usa una stima delle sue caratteristiche.",
         "TEXT_ONLY_ESTIMATE": "Il modello supporta più modalità, ma questa stima riguarda soltanto generazione di testo."
+    },
+    "inputPath": "Come vuoi indicare l’output?",
+    "fromText": "Incollo la risposta",
+    "fromTokens": "Conosco il numero di token",
+    "generatedText": "Risposta generata",
+    "textHint": "Incolla una sola risposta dell’AI, senza prompt o conversazione. Fino a 50.000 caratteri. Il conteggio avviene nel browser: il testo non viene inviato.",
+    "emptyText": "Incolla la risposta generata per contarne i token.",
+    "invalidText": "Il testo contiene caratteri Unicode non validi. Correggili prima del conteggio.",
+    "counting": "Conteggio dei token nel browser…",
+    "tokenizerUnavailable": "Il conteggio locale non è disponibile. Riprova oppure inserisci un numero di token già noto.",
+    "retryTokens": "Riprova il conteggio",
+    "tokenProvenance": "Origine del conteggio",
+    "declaredTokens": "Dichiarato da te",
+    "matchedTokens": "Conteggiato dal testo visibile",
+    "referenceTokens": "Approssimato dal testo visibile",
+    "matchedHint": "Il modello selezionato usa il tokenizer compatibile o200k_base. Il conteggio riguarda il testo incollato, non l’utilizzo completo registrato dal provider.",
+    "approximationHint": "Approssimazione grezza: usiamo il tokenizer di riferimento o200k_base, non quello specifico di questo modello. Lo scarto non è stato validato. Se disponibile, usa il conteggio del provider.",
+    "selectForTokenHint": "Seleziona un modello per sapere se il tokenizer è compatibile o il conteggio è un’approssimazione grezza.",
+    "hiddenTokens": "Il testo visibile esclude ragionamento nascosto e altri token non visibili. L’energia può risultare sottostimata; il suo intervallo non copre queste informazioni mancanti o l’errore nel conteggio.",
+    "usageHelp": "Dove trovo il numero di token?",
+    "usageDocs": "Documentazione ufficiale sull’utilizzo",
+    "tokenizerDetails": "Il testo viene conteggiato localmente con",
+    "usageHints": {
+        "generic": "Cerca il conteggio di output di una sola generazione nella risposta API o nei dettagli di utilizzo. Non usare i token di input, il limite massimo impostato o il totale della conversazione. Se hai solo il testo della risposta, scegli “Incollo la risposta”.",
+        "openai": "Nella risposta API: usage.output_tokens per Responses, oppure usage.completion_tokens per Chat Completions. Questi totali includono il ragionamento eventualmente generato: non aggiungerlo di nuovo. Se hai solo il testo della risposta di ChatGPT, scegli “Incollo la risposta”.",
+        "anthropic": "Nella risposta della Messages API usa usage.output_tokens. Non usare input_tokens o max_tokens. Se hai solo il testo della risposta di Claude, scegli “Incollo la risposta”.",
+        "google_genai": "Per un solo candidato GenerateContent usa usageMetadata.candidatesTokenCount più thoughtsTokenCount, se presente. Nel client Python: usage_metadata.candidates_token_count e thoughts_token_count. Non usare totalTokenCount, che include il prompt. Se hai solo il testo, scegli “Incollo la risposta”.",
+        "mistralai": "Nella risposta della Chat API usa usage.completion_tokens per una sola generazione. Non usare prompt_tokens o total_tokens. Se hai solo il testo della risposta, scegli “Incollo la risposta”."
     }
 },
+
   metadata: {
     title: "AI Waste Index",
     description:

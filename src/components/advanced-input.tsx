@@ -5,6 +5,15 @@ import { advancedCatalogSchema, advancedRequestSchema, advancedResultSchema,
   type AdvancedCatalog, type AdvancedRequest, type AdvancedResult } from "@/contracts/advanced";
 import type { Dictionary } from "@/i18n/types";
 import type { Locale } from "@/i18n/config";
+import { useTokenCount } from "@/browser/tokens/use-token-count";
+import { textInputError, textTokenSource, TOKENIZER_LABEL, type TokenSource } from "@/browser/tokens/types";
+
+const usageLinks: Record<string, string> = {
+  openai: "https://developers.openai.com/api/docs/guides/token-counting",
+  anthropic: "https://platform.claude.com/docs/en/api/messages/create",
+  google_genai: "https://ai.google.dev/gemini-api/docs/generate-content/tokens",
+  mistralai: "https://docs.mistral.ai/api/endpoint/chat",
+};
 
 export interface AdvancedInputHandle { suspend(): void }
 
@@ -18,11 +27,17 @@ export function AdvancedInput({ dictionary: d, locale = "en", active = true, ref
   const [provider, setProvider] = useState("");
   const [model, setModel] = useState("");
   const [tokens, setTokens] = useState("");
+  const [inputPath, setInputPath] = useState<"text" | "tokens">("text");
   const [duration, setDuration] = useState("");
   const [reference, setReference] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ data: AdvancedResult; input: AdvancedRequest } | null>(null);
+  const [result, setResult] = useState<{ data: AdvancedResult; input: AdvancedRequest; tokenSource: TokenSource } | null>(null);
+  const counted = useTokenCount(reference, active && inputPath === "text");
+  const tokenSource = inputPath === "tokens" ? "declared" : textTokenSource(provider, model);
+  const tokenLabels = { declared: c.declaredTokens, "text-matched": c.matchedTokens, "text-reference": c.referenceTokens };
+  const tokenHint = tokenSource === "text-matched" ? c.matchedHint : c.approximationHint;
+  const usageProvider = Object.hasOwn(usageLinks, provider) ? provider as keyof typeof c.usageHints : "generic";
   const request = useRef<AbortController | null>(null);
   const catalogRequest = useRef<AbortController | null>(null);
   const resultHeading = useRef<HTMLHeadingElement>(null);
@@ -58,12 +73,16 @@ export function AdvancedInput({ dictionary: d, locale = "en", active = true, ref
   const submit = async () => {
     changed();
     if (!catalog?.providers.some(p => p.id === provider && p.models.includes(model))) return setError(c.selectionError);
-    if (!/^\d{1,7}$/.test(tokens) || Number(tokens) < 1 || Number(tokens) > 1_000_000) return setError(c.tokenError);
+    if (inputPath === "tokens" && (!/^\d{1,7}$/.test(tokens) || Number(tokens) < 1 || Number(tokens) > 1_000_000)) return setError(c.tokenError);
+    if (inputPath === "text") {
+      const invalid = textInputError(reference);
+      if (invalid) return setError(c[invalid]);
+      if (counted.count === undefined) return setError(counted.failed ? c.tokenizerUnavailable : c.counting);
+    }
     const seconds = duration === "" ? undefined : Number(duration.replace(",", "."));
     if (duration !== "" && (!/^\d+(?:[.,]\d+)?$/.test(duration) || !Number.isFinite(seconds)
       || seconds! <= 0 || seconds! > 3600)) return setError(c.durationError);
-    if ([...reference].length > 50_000) return setError(c.tooLarge);
-    const input = advancedRequestSchema.parse({ provider, model, outputTokens: Number(tokens),
+    const input = advancedRequestSchema.parse({ provider, model, outputTokens: inputPath === "tokens" ? Number(tokens) : counted.count,
       ...(seconds === undefined ? {} : { requestLatencySeconds: seconds }) });
     const controller = new AbortController(); request.current = controller;
     setPending(true);
@@ -85,7 +104,7 @@ export function AdvancedInput({ dictionary: d, locale = "en", active = true, ref
       const data = advancedResultSchema.parse(body);
       if (data.durationSource !== (seconds === undefined ? "estimated" : "declared")
         || data.methodologyVersion !== catalog.methodologyVersion || data.source.version !== catalog.source.version) throw new Error();
-      setResult({ data, input });
+      setResult({ data, input, tokenSource });
     } catch {
       if (request.current === controller) setError(c.unavailable);
     } finally {
@@ -95,6 +114,7 @@ export function AdvancedInput({ dictionary: d, locale = "en", active = true, ref
   };
   const reset = () => {
     changed(); setProvider(""); setModel(""); setTokens(""); setDuration(""); setReference("");
+    setInputPath("text"); counted.clear();
     providerElement.current?.focus();
   };
   const identity = result?.data ?? catalog;
@@ -120,25 +140,49 @@ export function AdvancedInput({ dictionary: d, locale = "en", active = true, ref
             {catalog?.providers.find(p => p.id === provider)?.models.map(name => <option key={name}>{name}</option>)}
           </select></div>
       </div>
-      <div className="input-field"><label htmlFor="advanced-tokens">{c.outputTokens}</label>
+      <fieldset className="advanced-kind"><legend>{c.inputPath}</legend>
+        {(["text", "tokens"] as const).map(path => <label key={path}>
+          <input type="radio" name="advanced-input-path" value={path} checked={inputPath === path}
+            onChange={() => { changed(); setInputPath(path); }} />
+          {path === "text" ? c.fromText : c.fromTokens}
+        </label>)}
+      </fieldset>
+      {inputPath === "text" ? <div className="input-field">
+        <label htmlFor="advanced-text">{c.generatedText}</label>
+        <textarea id="advanced-text" autoComplete="off" spellCheck={false} value={reference}
+          aria-describedby="advanced-text-hint advanced-count-hint"
+          aria-invalid={error === c.emptyText || error === c.tooLarge || error === c.invalidText || undefined}
+          onChange={event => { changed(); setReference(event.currentTarget.value); }} />
+        <p id="advanced-text-hint" className="input-hint">{c.textHint}</p>
+        <p id="advanced-count-hint" className="input-hint">{model ? tokenHint : c.selectForTokenHint}</p>
+        <p className="input-hint">{c.hiddenTokens}</p>
+        <div role="status" aria-live="polite">
+          {counted.counting && <p>{c.counting}</p>}
+          {counted.count !== undefined && <p data-testid="advanced-token-count">
+            {c.outputTokens}: {new Intl.NumberFormat(locale).format(counted.count)}
+          </p>}
+          {counted.failed && <p>{c.tokenizerUnavailable}</p>}
+        </div>
+        {counted.failed && <button type="button" className="secondary-action"
+          onClick={() => { changed(); counted.retry(); }}>{c.retryTokens}</button>}
+      </div> : <div className="input-field"><label htmlFor="advanced-tokens">{c.outputTokens}</label>
         <input id="advanced-tokens" type="text" inputMode="numeric" autoComplete="off" value={tokens}
           aria-describedby="advanced-token-hint" aria-invalid={error === c.tokenError || undefined}
           onChange={event => { changed(); setTokens(event.currentTarget.value); }} />
-        <p className="input-hint" id="advanced-token-hint">{c.tokenHint}</p></div>
+        <p className="input-hint" id="advanced-token-hint">{c.tokenHint}</p>
+        <details className="advanced-details"><summary>{c.usageHelp}</summary>
+          <p className="input-hint">{c.usageHints[usageProvider]}</p>
+          {usageProvider !== "generic" && <a href={usageLinks[usageProvider]} target="_blank" rel="noreferrer">{c.usageDocs}</a>}
+        </details>
+      </div>}
       <div className="input-field"><label htmlFor="advanced-duration">{c.duration}</label>
         <input id="advanced-duration" type="text" inputMode="decimal" autoComplete="off" value={duration}
           aria-describedby="advanced-duration-hint" aria-invalid={error === c.durationError || undefined}
           onChange={event => { changed(); setDuration(event.currentTarget.value); }} />
         <p className="input-hint" id="advanced-duration-hint">{c.durationHint}</p></div>
-      <details className="advanced-details"><summary>{c.reference}</summary>
-        <div className="input-field"><label className="sr-only" htmlFor="advanced-reference">{c.reference}</label>
-          <textarea id="advanced-reference" autoComplete="off" spellCheck={false} value={reference}
-            aria-describedby="advanced-reference-hint" onChange={event => { changed(); setReference(event.currentTarget.value); }} />
-          <p id="advanced-reference-hint" className="input-hint">{c.referenceHint}</p></div>
-      </details>
       {error && <p ref={errorElement} role="alert" tabIndex={-1}>{error}</p>}
       <div className="analysis-actions">
-        <button type="submit" className="primary-action" disabled={!catalog || pending}>{c.submit}</button>
+        <button type="submit" className="primary-action" disabled={!catalog || pending || counted.counting}>{c.submit}</button>
         {pending && <button type="button" className="secondary-action" onClick={suspend}>{c.cancel}</button>}
         <button type="button" className="text-action" onClick={reset}>{c.reset}</button>
       </div>
@@ -153,7 +197,12 @@ export function AdvancedInput({ dictionary: d, locale = "en", active = true, ref
         <div><dt>{c.provider}</dt><dd>{catalog?.providers.find(p => p.id === result.input.provider)?.label}</dd></div>
         <div><dt>{c.model}</dt><dd>{result.input.model}</dd></div>
         <div><dt>{c.outputTokens}</dt><dd>{new Intl.NumberFormat(locale).format(result.input.outputTokens)}</dd></div>
+        <div><dt>{c.tokenProvenance}</dt><dd>{tokenLabels[result.tokenSource]}</dd></div>
       </dl>
+      {result.tokenSource !== "declared" && <>
+        <p>{result.tokenSource === "text-matched" ? c.matchedHint : c.approximationHint}</p>
+        <p>{c.hiddenTokens}</p>
+      </>}
       <p>{result.data.durationSource === "estimated" ? c.estimatedDuration
         : c.declaredDuration.replace("{seconds}", format.format(result.input.requestLatencySeconds!))}</p>
       {result.data.warnings.map(code => <p key={code} className="input-hint">{c.warnings[code]}</p>)}
@@ -163,6 +212,7 @@ export function AdvancedInput({ dictionary: d, locale = "en", active = true, ref
       {c.version}: {identity.methodologyVersion}</p>}
     <details className="advanced-details"><summary>{c.method}</summary><div className="advanced-stack">
       <p>{c.scope}</p><p>{c.limitations}</p><p>{c.latencyExplanation}</p><p>{c.privacy}</p>
+      <p>{c.tokenizerDetails} {TOKENIZER_LABEL}.</p>
       <a href="https://ecologits.ai/latest/methodology/llm_inference/" target="_blank" rel="noreferrer">{c.sourceLink}</a>
     </div></details>
   </section></main>;
