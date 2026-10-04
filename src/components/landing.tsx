@@ -1,7 +1,11 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import { locales, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
 
-import { AnalysisInput } from "./analysis-input";
+import { AnalysisInput, type AnalysisInputHandle } from "./analysis-input";
+import { AdvancedInput } from "./advanced-input";
 import { themeStyle } from "@/presentation/theme";
 import { BrandMark } from "./brand-mark";
 
@@ -15,7 +19,11 @@ interface LandingProps {
   ocrLimits?: OcrLimits | null;
 }
 
-export function Landing({
+export function Landing(props: LandingProps) {
+  return <ProductSurface key={props.locale} {...props} />;
+}
+
+function ProductSurface({
   dictionary,
   locale,
   maxTextCodePoints,
@@ -23,11 +31,32 @@ export function Landing({
   ocrLimits,
 }: LandingProps) {
   const { landing, navigation } = dictionary;
+  const [mode, setMode] = useState<"blame" | "advanced">("blame");
+  const [generation, setGeneration] = useState(0);
+  const blame = useRef<AnalysisInputHandle>(null);
+
+  useEffect(() => {
+    const discard = () => { setMode("blame"); setGeneration(value => value + 1); };
+    window.addEventListener("pagehide", discard);
+    window.addEventListener("pageshow", discard);
+    return () => {
+      window.removeEventListener("pagehide", discard);
+      window.removeEventListener("pageshow", discard);
+    };
+  }, []);
 
   return (
     <div className="site-shell" style={themeStyle}>
       <header className="site-header">
         <span className="brand"><BrandMark />{landing.brand}</span>
+        <div className="product-modes" role="group" aria-label={dictionary.productModes.label}>
+          {(["blame", "advanced"] as const).map(value => <button key={value} type="button"
+            aria-pressed={mode === value} aria-controls={`product-${value}`}
+            onClick={() => {
+              if (value === "advanced" && mode === "blame") blame.current?.suspend();
+              setMode(value);
+            }}>{dictionary.productModes[value]}</button>)}
+        </div>
         <nav aria-label={navigation.languageSelectorLabel}>
           <ul className="locale-list">
             {locales.map((candidate) => (
@@ -47,8 +76,11 @@ export function Landing({
         </nav>
       </header>
 
-      <AnalysisInput
-          key={locale}
+      <div id="product-blame" className="mode-surface" hidden={mode !== "blame"}>
+        <AnalysisInput
+          key={generation}
+          ref={blame}
+          active={mode === "blame"}
           copy={dictionary.inputShell}
           dictionary={dictionary}
           locale={locale}
@@ -56,6 +88,10 @@ export function Landing({
           maxUrlChars={maxUrlChars}
           ocrLimits={ocrLimits}
       />
+      </div>
+      <div id="product-advanced" className="mode-surface" hidden={mode !== "advanced"}>
+        <AdvancedInput key={generation} dictionary={dictionary} />
+      </div>
     </div>
   );
 }

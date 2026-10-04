@@ -2,11 +2,13 @@
 
 import {
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
   type KeyboardEvent,
   type FormEvent,
   type ReactNode,
+  type Ref,
 } from "react";
 
 import {
@@ -34,7 +36,11 @@ import type { Dictionary } from "@/i18n/types";
 const inputModes = ["text", "url", "screenshot"] as const;
 type InputMode = (typeof inputModes)[number];
 
+export interface AnalysisInputHandle { suspend: () => void }
+
 interface AnalysisInputProps {
+  ref?: Ref<AnalysisInputHandle>;
+  active?: boolean;
   copy: Dictionary["inputShell"];
   dictionary: Dictionary;
   locale: Locale;
@@ -44,6 +50,8 @@ interface AnalysisInputProps {
 }
 
 export function AnalysisInput({
+  ref,
+  active = true,
   copy,
   dictionary,
   locale,
@@ -70,6 +78,16 @@ export function AnalysisInput({
   const fileRef = useRef<HTMLInputElement | null>(null);
   const resetFocus = useRef(false);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  useImperativeHandle(ref, () => ({
+    suspend() {
+      activeRequest.current?.abort();
+      activeRequest.current = null;
+      setPending(null);
+      setOcrProgress(null);
+      setInfo(null);
+    },
+  }), []);
 
   useEffect(() => {
     const discardDraft = () => {
@@ -153,16 +171,16 @@ export function AnalysisInput({
   };
 
   useEffect(() => {
-    if (resetFocus.current && !result && preview === null && pending === null) {
+    if (active && resetFocus.current && !result && preview === null && pending === null) {
       document.getElementById(`input-${activeMode}`)?.focus();
       resetFocus.current = false;
     }
-  }, [result, preview, pending, activeMode]);
+  }, [result, preview, pending, activeMode, active]);
 
   const hasPreview = preview !== null;
   useEffect(() => {
-    if (hasPreview) previewHeading.current?.focus();
-  }, [hasPreview]);
+    if (hasPreview && active) previewHeading.current?.focus();
+  }, [hasPreview, active]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();

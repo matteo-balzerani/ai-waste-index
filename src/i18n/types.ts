@@ -1,6 +1,65 @@
 import type { ApiMessageCode } from "@/contracts/codes";
 
 export interface Dictionary {
+  productModes: {
+    label: string;
+    blame: string;
+    advanced: string;
+  };
+  advanced: {
+    title: string;
+    prototype: string;
+    notice: string;
+    inputType: string;
+    finalText: string;
+    chat: string;
+    textLabel: string;
+    textOnlyNotice: string;
+    chatLabel: string;
+    chatHint: string;
+    review: string;
+    replacePaste: string;
+    reviewTitle: string;
+    reviewHint: string;
+    message: string;
+    role: string;
+    roles: { unknown: string; user: string; assistant: string };
+    content: string;
+    add: string;
+    remove: string;
+    split: string;
+    splitHint: string;
+    splitError: string;
+    confirm: string;
+    reference: string;
+    referenceHint: string;
+    model: string;
+    modelHint: string;
+    details: string;
+    reasoning: string;
+    inputTokens: string;
+    outputTokens: string;
+    tokenHint: string;
+    tokenError: string;
+    overrideHint: string;
+    unknown: string;
+    preview: string;
+    resultTitle: string;
+    totals: string;
+    breakdown: string;
+    exchange: string;
+    undefinedValue: string;
+    summary: string;
+    assumptions: string;
+    edit: string;
+    reset: string;
+    privacy: string;
+    emptyError: string;
+    reviewError: string;
+    tooLarge: string;
+    tooMany: string;
+    detailsError: string;
+  };
   metadata: {
     title: string;
     description: string;
