@@ -1,235 +1,169 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  emptyDetails, parseConversation, prototypeMessageLimit, prototypeTextLimit, validDetails,
-  type ConversationMessage, type MessageRole,
-} from "@/browser/advanced/conversation";
+import { useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
+import { advancedCatalogSchema, advancedRequestSchema, advancedResultSchema,
+  type AdvancedCatalog, type AdvancedRequest, type AdvancedResult } from "@/contracts/advanced";
 import type { Dictionary } from "@/i18n/types";
-import { AdvancedDetails, AdvancedParameterSummary } from "./advanced-details";
+import type { Locale } from "@/i18n/config";
 
-export function AdvancedInput({ dictionary: d }: { dictionary: Dictionary }) {
+export interface AdvancedInputHandle { suspend(): void }
+
+export function AdvancedInput({ dictionary: d, locale = "en", active = true, ref }: {
+  dictionary: Dictionary; locale?: Locale; active?: boolean; ref?: Ref<AdvancedInputHandle>;
+}) {
   const c = d.advanced;
-  const [kind, setKind] = useState<"text" | "chat">("text");
-  const [text, setText] = useState("");
-  const [paste, setPaste] = useState("");
+  const [catalog, setCatalog] = useState<AdvancedCatalog | null>(null);
+  const [catalogError, setCatalogError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [provider, setProvider] = useState("");
+  const [model, setModel] = useState("");
+  const [tokens, setTokens] = useState("");
+  const [duration, setDuration] = useState("");
   const [reference, setReference] = useState("");
-  const [details, setDetails] = useState(emptyDetails);
-  const [messages, setMessages] = useState<ConversationMessage[]>([]);
-  const [reviewing, setReviewing] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
-  const [result, setResult] = useState(false);
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [focusTarget, setFocusTarget] = useState<{ id: string } | null>(null);
-  const nextId = useRef(0);
-  const textareas = useRef(new Map<number, HTMLTextAreaElement>());
+  const [result, setResult] = useState<{ data: AdvancedResult; input: AdvancedRequest } | null>(null);
+  const request = useRef<AbortController | null>(null);
+  const catalogRequest = useRef<AbortController | null>(null);
+  const resultHeading = useRef<HTMLHeadingElement>(null);
+  const errorElement = useRef<HTMLParagraphElement>(null);
+  const providerElement = useRef<HTMLSelectElement>(null);
+  const format = new Intl.NumberFormat(locale, { maximumSignificantDigits: 4 });
 
+  const suspend = () => {
+    request.current?.abort(); request.current = null;
+    setPending(false);
+  };
+  useImperativeHandle(ref, () => ({ suspend }));
   useEffect(() => {
-    if (focusTarget) document.getElementById(focusTarget.id)?.focus();
-  }, [focusTarget]);
+    if (!active || catalog) return;
+    const controller = new AbortController();
+    catalogRequest.current = controller;
+    const timer = setTimeout(() => controller.abort(), 10_000);
+    let cancelled = false;
+    void fetch("/api/advanced/models", { cache: "no-store", signal: controller.signal })
+      .then(async response => {
+        if (!response.ok) throw new Error();
+        const parsed = advancedCatalogSchema.parse(await response.json());
+        if (!cancelled && !controller.signal.aborted) { setCatalog(parsed); setCatalogError(false); }
+      }).catch(() => { if (!cancelled) setCatalogError(true); })
+      .finally(() => clearTimeout(timer));
+    return () => { cancelled = true; clearTimeout(timer); controller.abort(); };
+  }, [active, attempt, catalog]);
+  useEffect(() => () => { request.current?.abort(); catalogRequest.current?.abort(); }, []);
+  useEffect(() => { if (result && active) resultHeading.current?.focus(); }, [result, active]);
+  useEffect(() => { if (error && active) errorElement.current?.focus(); }, [error, active]);
 
-  const focus = (id: string) => setFocusTarget({ id });
-  const changed = () => { setConfirmed(false); setError(null); setResult(false); };
-  const update = (id: number, patch: Partial<ConversationMessage>) => {
+  const changed = () => { suspend(); setResult(null); setError(null); };
+  const submit = async () => {
     changed();
-    setMessages(current => current.map(message => message.id === id ? { ...message, ...patch } : message));
-  };
-  const fail = (message: string) => { setError(message); focus("advanced-error"); };
-  const contentTooLarge = (value: string) => [...value].length > prototypeTextLimit;
-  const conversationValid = messages.length > 0 && messages.every(message =>
-    message.role !== "unknown" && message.content.trim() && validDetails(message)) &&
-    messages.some(message => message.role === "assistant");
-
-  const review = () => {
-    changed();
-    if (!paste.trim()) return fail(c.emptyError);
-    if (contentTooLarge(paste + reference)) return fail(c.tooLarge);
-    const parsed = parseConversation(paste);
-    if (parsed.length > prototypeMessageLimit) return fail(c.tooMany);
-    setMessages(parsed.map(message => ({ ...emptyDetails(), ...message, id: nextId.current++ })));
-    setReviewing(true);
-    focus("advanced-review-title");
-  };
-
-  const add = () => {
-    changed();
-    if (messages.length >= prototypeMessageLimit) return fail(c.tooMany);
-    const id = nextId.current++;
-    setMessages(current => [...current, { ...emptyDetails(), id, role: "unknown", content: "" }]);
-    focus(`message-${id}-role`);
-  };
-
-  const split = (message: ConversationMessage) => {
-    const position = textareas.current.get(message.id)?.selectionStart ?? 0;
-    const before = message.content.slice(0, position);
-    const after = message.content.slice(position);
-    if (!before.trim() || !after.trim()) return fail(c.splitError);
-    if (messages.length >= prototypeMessageLimit) return fail(c.tooMany);
-    changed();
-    const id = nextId.current++;
-    // Counts cannot be attributed to either new response automatically.
-    setMessages(current => current.flatMap(item => item.id === message.id ? [
-      { ...item, content: before, inputTokens: "", outputTokens: "" },
-      { ...emptyDetails(), id, role: "unknown" as const, content: after },
-    ] : [item]));
-    focus(`message-${id}-role`);
-  };
-
-  const showPreview = () => {
-    const applicableDetails = kind === "text" ? details : { ...details, inputTokens: "", outputTokens: "" };
-    if (!validDetails(applicableDetails) || (kind === "chat" && messages.some(message => !validDetails(message)))) {
-      return fail(c.tokenError + " " + c.detailsError);
+    if (!catalog?.providers.some(p => p.id === provider && p.models.includes(model))) return setError(c.selectionError);
+    if (!/^\d{1,7}$/.test(tokens) || Number(tokens) < 1 || Number(tokens) > 1_000_000) return setError(c.tokenError);
+    const seconds = duration === "" ? undefined : Number(duration.replace(",", "."));
+    if (duration !== "" && (!/^\d+(?:[.,]\d+)?$/.test(duration) || !Number.isFinite(seconds)
+      || seconds! <= 0 || seconds! > 3600)) return setError(c.durationError);
+    if ([...reference].length > 50_000) return setError(c.tooLarge);
+    const input = advancedRequestSchema.parse({ provider, model, outputTokens: Number(tokens),
+      ...(seconds === undefined ? {} : { requestLatencySeconds: seconds }) });
+    const controller = new AbortController(); request.current = controller;
+    setPending(true);
+    const timer = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await fetch("/api/advanced/estimate", { method: "POST", cache: "no-store",
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify(input), signal: controller.signal });
+      const body: unknown = await response.json();
+      if (request.current !== controller) return;
+      if (controller.signal.aborted) throw new Error();
+      if (!response.ok) {
+        const code = (body as { error?: { code?: string } })?.error?.code;
+        const messages: Record<string, string> = { INVALID_INPUT: d.apiMessages.INVALID_INPUT,
+          ESTIMATE_OUT_OF_DOMAIN: d.apiMessages.ESTIMATE_OUT_OF_DOMAIN, INPUT_TOO_LARGE: d.apiMessages.INPUT_TOO_LARGE,
+          REQUEST_TIMEOUT: d.apiMessages.REQUEST_TIMEOUT, GUARD_UNAVAILABLE: c.unavailable,
+          ESTIMATOR_UNAVAILABLE: c.unavailable };
+        setError(messages[code ?? ""] ?? c.unavailable); return;
+      }
+      const data = advancedResultSchema.parse(body);
+      if (data.durationSource !== (seconds === undefined ? "estimated" : "declared")
+        || data.methodologyVersion !== catalog.methodologyVersion || data.source.version !== catalog.source.version) throw new Error();
+      setResult({ data, input });
+    } catch {
+      if (request.current === controller) setError(c.unavailable);
+    } finally {
+      clearTimeout(timer);
+      if (request.current === controller) { request.current = null; setPending(false); }
     }
-    if (kind === "text" && !text.trim()) return fail(c.emptyError);
-    if (kind === "chat" && (!reviewing || !confirmed || !conversationValid)) return fail(c.reviewError);
-    if (contentTooLarge(kind === "text" ? text : messages.map(message => message.content).join("") + reference)) {
-      return fail(c.tooLarge);
-    }
-    setError(null);
-    setResult(true);
-    focus("advanced-result-title");
   };
+  const reset = () => {
+    changed(); setProvider(""); setModel(""); setTokens(""); setDuration(""); setReference("");
+    providerElement.current?.focus();
+  };
+  const identity = result?.data ?? catalog;
 
-  const metricPlaceholders = () => <dl className="advanced-metrics">
-    {[d.analysis.compactEnergy, d.analysis.compactCarbon, d.analysis.compactWater].map(label =>
-      <div key={label}><dt>{label}</dt><dd>{c.undefinedValue}</dd></div>)}
-  </dl>;
-
-  const notice = <div className="advanced-notice">
-    <p className="prototype-chip">{c.prototype}</p><p>{c.notice}</p>
-  </div>;
-
-  return <>
-    <main className="landing-main advanced-main">
-      {result ? <section aria-labelledby="advanced-result-title" className="advanced-stack">
-        <h1 id="advanced-result-title" tabIndex={-1}>{c.resultTitle}</h1>
-        {notice}
-        <section className="composer advanced-stack" aria-labelledby="advanced-totals">
-          <h2 id="advanced-totals">{c.totals}</h2>{metricPlaceholders()}
-          <p className="input-hint">{c.assumptions}</p>
-        </section>
-        <section className="composer advanced-stack" aria-labelledby="advanced-summary">
-          <h2 id="advanced-summary">{c.summary}</h2>
-          <AdvancedParameterSummary details={details} copy={c} tokens={kind === "text"} />
-          {kind === "text" && <p className="input-hint">{c.textOnlyNotice}</p>}
-          {(kind === "text" || reference.trim()) && <details className="advanced-details">
-            <summary>{kind === "text" ? c.finalText : c.reference}</summary>
-            <p className="advanced-content">{kind === "text" ? text : reference}</p>
-            {kind === "chat" && <p className="input-hint">{c.referenceHint}</p>}
-          </details>}
-        </section>
-        {kind === "chat" && <section aria-labelledby="advanced-breakdown" className="advanced-stack">
-          <h2 id="advanced-breakdown">{c.breakdown}</h2>
-          {messages.filter(message => message.role === "assistant").map((message, index) =>
-            <article className="composer advanced-stack" key={message.id}>
-              <h3>{c.exchange.replace("{number}", String(index + 1))}</h3>
-              {metricPlaceholders()}
-              <AdvancedParameterSummary copy={c} details={{ ...message,
-                model: message.model.trim() || details.model,
-                reasoning: message.reasoning.trim() || details.reasoning }} />
-              <details className="advanced-details"><summary>{c.content}</summary>
-                <p className="advanced-content">{message.content}</p>
-              </details>
-            </article>)}
-        </section>}
-        <button className="secondary-action" type="button" onClick={() => {
-          setResult(false); focus("advanced-title");
-        }}>{c.edit}</button>
-      </section> : <section aria-labelledby="advanced-title" className="advanced-stack">
-        <h1 id="advanced-title" tabIndex={-1}>{c.title}</h1>
-        {notice}
-        <div className="composer advanced-stack">
-          <fieldset className="advanced-kind">
-            <legend className="sr-only">{c.inputType}</legend>
-            {(["text", "chat"] as const).map(value => <label key={value}>
-              <input type="radio" name="advanced-kind" value={value} checked={kind === value}
-                onChange={() => { changed(); setKind(value); }} />
-              {value === "text" ? c.finalText : c.chat}
-            </label>)}
-          </fieldset>
-          {kind === "text" ? <div className="input-field">
-            <label htmlFor="advanced-text">{c.textLabel}</label>
-            <textarea id="advanced-text" autoComplete="off" spellCheck={false} value={text}
-              aria-describedby="advanced-text-hint" onChange={event => { changed(); setText(event.currentTarget.value); }} />
-            <p id="advanced-text-hint" className="input-hint">{c.textOnlyNotice}</p>
-          </div> : <>
-            {!reviewing ? <div className="input-field">
-              <label htmlFor="advanced-chat">{c.chatLabel}</label>
-              <textarea id="advanced-chat" autoComplete="off" spellCheck={false} value={paste}
-                aria-describedby="advanced-chat-hint" onChange={event => { changed(); setPaste(event.currentTarget.value); }} />
-              <p className="input-hint" id="advanced-chat-hint">{c.chatHint}</p>
-              <button type="button" className="secondary-action" onClick={review}>{c.review}</button>
-            </div> : <section aria-labelledby="advanced-review-title" className="advanced-stack">
-              <h2 id="advanced-review-title" tabIndex={-1}>{c.reviewTitle}</h2>
-              <button type="button" className="text-action" onClick={() => {
-                changed(); setReviewing(false); focus("advanced-chat");
-              }}>{c.replacePaste}</button>
-              <p className="input-hint">{c.reviewHint}</p>
-              <p className="input-hint" id="advanced-split-hint">{c.splitHint}</p>
-              {messages.map((message, index) => <fieldset className="advanced-message advanced-stack" key={message.id}>
-                <legend>{c.message.replace("{number}", String(index + 1))}</legend>
-                <div className="input-field">
-                  <label htmlFor={`message-${message.id}-role`}>{c.role}</label>
-                  <select id={`message-${message.id}-role`} value={message.role}
-                    onChange={event => update(message.id, {
-                      ...emptyDetails(), role: event.currentTarget.value as MessageRole,
-                    })}>
-                    {(["unknown", "user", "assistant"] as const).map(role =>
-                      <option key={role} value={role}>{c.roles[role]}</option>)}
-                  </select>
-                </div>
-                <div className="input-field">
-                  <label htmlFor={`message-${message.id}-content`}>{c.content}</label>
-                  <textarea id={`message-${message.id}-content`} autoComplete="off" spellCheck={false}
-                    ref={node => { if (node) textareas.current.set(message.id, node); else textareas.current.delete(message.id); }}
-                    value={message.content} onChange={event => update(message.id, { content: event.currentTarget.value })} />
-                </div>
-                <div className="analysis-actions">
-                  <button type="button" className="secondary-action" aria-describedby="advanced-split-hint"
-                    onClick={() => split(message)}>{c.split}</button>
-                  <button type="button" className="text-action" onClick={() => {
-                    changed(); setMessages(current => current.filter(item => item.id !== message.id));
-                    focus("advanced-add");
-                  }}>{c.remove}</button>
-                </div>
-                {message.role === "assistant" && <>
-                  <p className="input-hint">{c.overrideHint}</p>
-                  <AdvancedDetails id={`message-${message.id}`} copy={c} details={message}
-                    onChange={value => update(message.id, value)} />
-                </>}
-              </fieldset>)}
-              <button id="advanced-add" type="button" className="secondary-action" onClick={add}>{c.add}</button>
-            </section>}
-            <div className="input-field">
-              <label htmlFor="advanced-reference">{c.reference}</label>
-              <textarea id="advanced-reference" autoComplete="off" spellCheck={false} value={reference}
-                aria-describedby="advanced-reference-hint"
-                onChange={event => { changed(); setReference(event.currentTarget.value); }} />
-              <p className="input-hint" id="advanced-reference-hint">{c.referenceHint}</p>
-            </div>
-          </>}
-        </div>
-        <section className="composer advanced-stack" aria-labelledby="advanced-parameters-title">
-          <h2 id="advanced-parameters-title">{c.summary}</h2>
-          <p className="input-hint">{c.modelHint}</p>
-          <AdvancedDetails id="advanced-general" details={details} copy={c} tokens={kind === "text"}
-            onChange={value => { changed(); setDetails(value); }} />
-        </section>
-        {kind === "chat" && reviewing && <label className="confirmation-control">
-          <input type="checkbox" checked={confirmed} disabled={!conversationValid}
-            onChange={event => { setConfirmed(event.currentTarget.checked); setError(null); }} />{c.confirm}
-        </label>}
-        {error && <p role="alert" id="advanced-error" tabIndex={-1}>{error}</p>}
-        <div className="analysis-actions">
-          <button className="primary-action" type="button"
-            disabled={kind === "chat" && (!reviewing || !confirmed)} onClick={showPreview}>{c.preview}</button>
-          <button type="button" className="text-action" onClick={() => {
-            changed(); setText(""); setPaste(""); setReference(""); setMessages([]);
-            setDetails(emptyDetails()); setReviewing(false); focus("advanced-title");
-          }}>{c.reset}</button>
-        </div>
-      </section>}
-    </main>
-    <footer className="site-footer advanced-footer"><p>{c.privacy}</p></footer>
-  </>;
+  return <main className="landing-main advanced-main"><section className="advanced-stack" aria-labelledby="advanced-title">
+    <h1 id="advanced-title">{c.title}</h1><p>{c.notice}</p>
+    <p className="prototype-chip">{c.experimental}</p>
+    {!catalog && (catalogError ? <div className="advanced-stack" role="status"><p>{c.unavailable}</p>
+      <button type="button" className="secondary-action" onClick={() => { setCatalogError(false); setAttempt(n => n + 1); }}>{c.retry}</button>
+    </div> : <p role="status">{c.loadingModels}</p>)}
+    <form className="composer advanced-stack" noValidate onSubmit={event => { event.preventDefault(); void submit(); }}>
+      <div className="advanced-grid">
+        <div className="input-field"><label htmlFor="advanced-provider">{c.provider}</label>
+          <select id="advanced-provider" ref={providerElement} value={provider} disabled={!catalog}
+            onChange={event => { changed(); setProvider(event.currentTarget.value); setModel(""); }}>
+            <option value="">{c.chooseProvider}</option>
+            {catalog?.providers.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+          </select></div>
+        <div className="input-field"><label htmlFor="advanced-model">{c.model}</label>
+          <select id="advanced-model" value={model} disabled={!provider || !catalog}
+            onChange={event => { changed(); setModel(event.currentTarget.value); }}>
+            <option value="">{c.chooseModel}</option>
+            {catalog?.providers.find(p => p.id === provider)?.models.map(name => <option key={name}>{name}</option>)}
+          </select></div>
+      </div>
+      <div className="input-field"><label htmlFor="advanced-tokens">{c.outputTokens}</label>
+        <input id="advanced-tokens" type="text" inputMode="numeric" autoComplete="off" value={tokens}
+          aria-describedby="advanced-token-hint" aria-invalid={error === c.tokenError || undefined}
+          onChange={event => { changed(); setTokens(event.currentTarget.value); }} />
+        <p className="input-hint" id="advanced-token-hint">{c.tokenHint}</p></div>
+      <div className="input-field"><label htmlFor="advanced-duration">{c.duration}</label>
+        <input id="advanced-duration" type="text" inputMode="decimal" autoComplete="off" value={duration}
+          aria-describedby="advanced-duration-hint" aria-invalid={error === c.durationError || undefined}
+          onChange={event => { changed(); setDuration(event.currentTarget.value); }} />
+        <p className="input-hint" id="advanced-duration-hint">{c.durationHint}</p></div>
+      <details className="advanced-details"><summary>{c.reference}</summary>
+        <div className="input-field"><label className="sr-only" htmlFor="advanced-reference">{c.reference}</label>
+          <textarea id="advanced-reference" autoComplete="off" spellCheck={false} value={reference}
+            aria-describedby="advanced-reference-hint" onChange={event => { changed(); setReference(event.currentTarget.value); }} />
+          <p id="advanced-reference-hint" className="input-hint">{c.referenceHint}</p></div>
+      </details>
+      {error && <p ref={errorElement} role="alert" tabIndex={-1}>{error}</p>}
+      <div className="analysis-actions">
+        <button type="submit" className="primary-action" disabled={!catalog || pending}>{c.submit}</button>
+        {pending && <button type="button" className="secondary-action" onClick={suspend}>{c.cancel}</button>}
+        <button type="button" className="text-action" onClick={reset}>{c.reset}</button>
+      </div>
+      {pending && <p role="status">{c.pending}</p>}
+    </form>
+    {result && <section className="composer advanced-stack" aria-labelledby="advanced-result-title">
+      <h2 id="advanced-result-title" ref={resultHeading} tabIndex={-1}>{c.resultTitle}</h2>
+      <dl className="advanced-summary"><div><dt>{c.energy} — {result.data.energyWh.kind === "range" ? c.range : c.point}</dt>
+        <dd data-testid="advanced-energy">{result.data.energyWh.kind === "range"
+          ? `${format.format(result.data.energyWh.low)}–${format.format(result.data.energyWh.high)}`
+          : format.format(result.data.energyWh.value)} Wh</dd></div>
+        <div><dt>{c.provider}</dt><dd>{catalog?.providers.find(p => p.id === result.input.provider)?.label}</dd></div>
+        <div><dt>{c.model}</dt><dd>{result.input.model}</dd></div>
+        <div><dt>{c.outputTokens}</dt><dd>{new Intl.NumberFormat(locale).format(result.input.outputTokens)}</dd></div>
+      </dl>
+      <p>{result.data.durationSource === "estimated" ? c.estimatedDuration
+        : c.declaredDuration.replace("{seconds}", format.format(result.input.requestLatencySeconds!))}</p>
+      {result.data.warnings.map(code => <p key={code} className="input-hint">{c.warnings[code]}</p>)}
+      <button type="button" className="secondary-action" onClick={() => { changed(); providerElement.current?.focus(); }}>{c.edit}</button>
+    </section>}
+    {identity && <p className="version-label">{c.source}: {identity.source.name} {identity.source.version}<br />
+      {c.version}: {identity.methodologyVersion}</p>}
+    <details className="advanced-details"><summary>{c.method}</summary><div className="advanced-stack">
+      <p>{c.scope}</p><p>{c.limitations}</p><p>{c.latencyExplanation}</p><p>{c.privacy}</p>
+      <a href="https://ecologits.ai/latest/methodology/llm_inference/" target="_blank" rel="noreferrer">{c.sourceLink}</a>
+    </div></details>
+  </section></main>;
 }

@@ -5,7 +5,7 @@ import { locales, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
 
 import { AnalysisInput, type AnalysisInputHandle } from "./analysis-input";
-import { AdvancedInput } from "./advanced-input";
+import { AdvancedInput, type AdvancedInputHandle } from "./advanced-input";
 import { themeStyle } from "@/presentation/theme";
 import { BrandMark } from "./brand-mark";
 
@@ -33,6 +33,7 @@ function ProductSurface({
   const { landing, navigation } = dictionary;
   const [mode, setMode] = useState<"blame" | "advanced">("blame");
   const [generation, setGeneration] = useState(0);
+  const advanced = useRef<AdvancedInputHandle>(null);
   const blame = useRef<AnalysisInputHandle>(null);
 
   useEffect(() => {
@@ -54,6 +55,7 @@ function ProductSurface({
             aria-pressed={mode === value} aria-controls={`product-${value}`}
             onClick={() => {
               if (value === "advanced" && mode === "blame") blame.current?.suspend();
+              if (value === "blame" && mode === "advanced") advanced.current?.suspend();
               setMode(value);
             }}>{dictionary.productModes[value]}</button>)}
         </div>
@@ -90,7 +92,7 @@ function ProductSurface({
       />
       </div>
       <div id="product-advanced" className="mode-surface" hidden={mode !== "advanced"}>
-        <AdvancedInput key={generation} dictionary={dictionary} />
+        <AdvancedInput key={generation} ref={advanced} active={mode === "advanced"} dictionary={dictionary} locale={locale} />
       </div>
     </div>
   );

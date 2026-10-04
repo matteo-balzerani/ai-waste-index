@@ -1,6 +1,29 @@
 # AI Waste Index public application
 
-Public Next.js application for the AI Waste Index MVP. The product estimates the consumption of one hypothetical AI generation of the visible text,
+## Advanced energy
+
+Advanced estimates energy for one declared text generation. Select a provider/model,
+enter output tokens (integer 1–1,000,000), and optionally duration (>0–3600 seconds).
+These are operational limits, not a validated accuracy domain. Optional reference text
+(up to 50,000 Unicode code points) stays in page memory and is never sent or tokenized.
+No provider/model is selected automatically.
+
+The authenticated estimator supplies its available catalog through `GET /api/advanced/models`;
+`POST /api/advanced/estimate` accepts only provider, model, outputTokens and optional
+requestLatencySeconds. Results preserve a native point or low/high range in Wh, with
+source/version, duration provenance and localized warnings. No score, CO2e, water or
+sharing is included. EcoLogits energy covers modeled server and data-center overhead;
+it is not the author's measured consumption, a confidence interval or full lifecycle energy.
+
+Blame remains the default. Mode switches retain drafts/results only in memory and cancel
+pending work; refresh, navigation and locale changes discard them. API responses use
+no-store, bounded bodies, existing local-demo admission and no content/result logging.
+An unavailable calculator offers retry; no frontend estimate or fallback exists. Full
+method and privacy explanations are available before submitting. IT and EN are supported.
+The calculator must be explicitly enabled by the local service operator. Production
+remains fail-closed. The previous Advanced chat prototype has been replaced.
+
+Public Next.js application for the AI Waste Index MVP. Blame estimates the consumption of one hypothetical AI generation of the visible text,
 excluding discarded drafts and revisions. It does not judge waste, quality, usefulness or AI authorship.
 
 ## Status

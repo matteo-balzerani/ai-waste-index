@@ -29,7 +29,7 @@ function unavailable(): EstimatorClientError {
   return new EstimatorClientError("ESTIMATOR_UNAVAILABLE", 503);
 }
 
-function hasRequiredResponseHeaders(response: Response): boolean {
+export function hasRequiredResponseHeaders(response: Response): boolean {
   const contentType = response.headers.get("content-type");
 
   return (
@@ -67,7 +67,7 @@ async function cancelResponseBody(response: Response): Promise<void> {
   }
 }
 
-async function readBoundedBody(
+export async function readBoundedBody(
   response: Response,
   maximumBytes: number,
   controller: AbortController,
@@ -129,7 +129,7 @@ async function readBoundedBody(
   return body;
 }
 
-function decodeJson(body: Uint8Array): unknown {
+export function decodeJson(body: Uint8Array): unknown {
   try {
     const text = new TextDecoder("utf-8", { fatal: true }).decode(body);
     return JSON.parse(text) as unknown;
@@ -138,7 +138,7 @@ function decodeJson(body: Uint8Array): unknown {
   }
 }
 
-function mapEstimatorError(status: number, body: unknown): never {
+export function mapEstimatorError(status: number, body: unknown): never {
   const schema =
     estimatorErrorResponseSchemas[
       status as keyof typeof estimatorErrorResponseSchemas

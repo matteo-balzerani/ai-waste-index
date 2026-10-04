@@ -1,0 +1,11 @@
+import { createAdvancedHandler } from "@/server/estimator/advanced";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const POST = createAdvancedHandler("estimate");
+const headers = { "Cache-Control": "no-store, max-age=0", Pragma: "no-cache" };
+export const GET = () => new Response(null, { status: 405, headers });
+export const HEAD = GET;
+export const PUT = GET;
+export const PATCH = GET;
+export const DELETE = GET;
+export const OPTIONS = () => new Response(null, { status: 204, headers: { ...headers, Allow: "POST, OPTIONS" } });

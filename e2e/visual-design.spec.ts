@@ -31,7 +31,7 @@ for (const locale of ["it", "en"] as const) {
       await expect(page.getByRole('main').getByRole('alert')).toHaveText(d.analysis.emptyInput);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
-    await page.getByText(d.inputShell.estimateLink, { exact: true }).focus();
+    await page.getByRole('button', { name: d.inputShell.estimateLink, exact: true }).focus();
     await page.keyboard.press('Enter');
     await expect(page.getByText(d.landing.estimateNoticeBody)).toBeVisible();
   });

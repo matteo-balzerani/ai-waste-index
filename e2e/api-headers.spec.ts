@@ -24,3 +24,19 @@ for (const path of ["/api/analyze", "/api/extract-url"]) {
     }
   });
 }
+
+for (const [path, supported] of [["/api/advanced/models", "GET"], ["/api/advanced/estimate", "POST"]]) {
+  test(`${path}: every method prohibits caching`, async ({ request }) => {
+    for (const method of ["GET", "HEAD", "PUT", "PATCH", "DELETE", "OPTIONS", "POST"]) {
+      const response = await request.fetch(path!, { method, ...(method === "POST" ? { data: {} } : {}) });
+      expect(response.headers()["cache-control"]).toBe("no-store, max-age=0");
+      expect(response.headers().pragma).toBe("no-cache");
+      if (method !== supported) {
+        expect(response.status()).toBe(method === "OPTIONS" ? 204 : 405);
+        expect((await response.body()).length).toBe(0);
+      }
+      if (method === "OPTIONS") expect(response.headers().allow?.split(",").map(v => v.trim()).sort()).toEqual([supported, "OPTIONS"].sort());
+      await response.dispose();
+    }
+  });
+}
