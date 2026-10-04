@@ -30,23 +30,17 @@ for (const locale of ["it", "en"] as const) {
       page.getByRole("heading", { name: dictionary.analysis.resultTitle }),
     ).toBeFocused();
     const resultRegion = page.getByRole("region", { name: dictionary.analysis.resultTitle });
-    if (body.methodologyVersion.startsWith("stub-")) {
-      await expect(resultRegion.getByText(dictionary.analysis.demoNotice)).toBeVisible();
-    } else {
-      await expect(resultRegion.getByText(dictionary.analysis.experimentalLabel, { exact: true })).toBeVisible();
-      await resultRegion.getByText(dictionary.analysis.methodologyTitle, { exact: true }).click();
-      await expect(resultRegion.locator(".result-disclosures")).toContainText(dictionary.analysis.experimentalNotice);
-    }
-    await expect(
-      page.getByText(`${dictionary.analysis.methodologyVersion}: ${body.methodologyVersion}`, { exact: true }),
-    ).toBeVisible();
+    await expect(resultRegion.locator(".estimate-chip")).toHaveText(body.methodologyVersion.startsWith("stub-")
+      ? dictionary.analysis.demoLabel : dictionary.analysis.experimentalLabel);
+    await page.getByRole("button", { name: dictionary.inputShell.estimateLink }).click();
+    const info = page.getByRole("dialog", { name: dictionary.inputShell.estimateLink });
+    await expect(info).toContainText(`${dictionary.analysis.methodologyVersion}: ${body.methodologyVersion}`);
+    await expect(info).toContainText(body.methodologyVersion.startsWith("stub-")
+      ? dictionary.analysis.demoNotice : dictionary.analysis.experimentalNotice);
+    await info.getByRole("button", { name: dictionary.sharing.close }).click();
     await expect(page.getByText(body.class, { exact: true })).toBeVisible();
-    for (const title of (body.methodologyVersion.startsWith("stub-")
-      ? [dictionary.analysis.demoEnergy, dictionary.analysis.demoCarbon, dictionary.analysis.demoWater]
-      : [dictionary.analysis.energy, dictionary.analysis.carbon, dictionary.analysis.water])) {
-      await expect(
-        page.getByRole("heading", { name: title, exact: true }),
-      ).toBeVisible();
+    for (const title of [dictionary.analysis.compactEnergy, dictionary.analysis.compactCarbon, dictionary.analysis.compactWater]) {
+      await expect(page.getByRole("heading", { name: title, exact: false })).toBeVisible();
     }
     expect(destinations).toEqual(["/api/analyze"]);
     expect(new URL(page.url()).pathname).toBe(`/${locale}`);

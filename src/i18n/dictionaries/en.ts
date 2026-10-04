@@ -61,6 +61,10 @@ export const en = {
     },
   },
   analysis: {
+    compactEnergy: "GPU energy",
+    compactCarbon: "CO₂e",
+    compactWater: "Water",
+    environmentInfo: "About the environmental estimate",
     loadingLabel: "Analysing…",
     submit: "Analyse",
     pending: "Analysing…",
@@ -155,6 +159,11 @@ export const en = {
       "Automatic copying is unavailable. Select and copy the text below.",
     imageFallback: "The image could not be copied. You can take a screenshot of the preview.",
     manualLabel: "Text to copy manually",
+  },
+  info: {
+    privacyTitle: "Privacy",
+    privacyBody: "The app does not save or log texts, links, images or results. There are no accounts, history or public result links. Sharing copies text or images to your device.",
+    inputTitle: "Links and screenshots",
   },
   apiMessages: {
     EXTRACTION_CONFIRMATION_REQUIRED:

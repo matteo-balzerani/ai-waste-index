@@ -6,6 +6,7 @@ import {
   useState,
   type KeyboardEvent,
   type FormEvent,
+  type ReactNode,
 } from "react";
 
 import {
@@ -22,7 +23,7 @@ import {
 import type { Locale } from "@/i18n/config";
 import { AnalysisResult } from "./analysis-result";
 import { UiIcon } from "./ui-icon";
-import { BrandMark } from "./brand-mark";
+import { InfoDialog, type InfoSection } from "./info-dialog";
 
 import { recognizeScreenshot } from "@/browser/ocr/client";
 import { screenshotMimeTypes } from "@/browser/ocr/image";
@@ -53,6 +54,10 @@ export function AnalysisInput({
   const [activeMode, setActiveMode] = useState<InputMode>("text");
   const [draft, setDraft] = useState("");
   const [result, setResult] = useState<PublicResult | null>(null);
+  const [info, setInfo] = useState<{ section: InfoSection; opener: HTMLElement | null } | null>(null);
+  const openInfo = (section: InfoSection = "overview") => {
+    setInfo({ section, opener: document.activeElement instanceof HTMLElement ? document.activeElement : null });
+  };
   const [pending, setPending] = useState<"analyze" | "extract" | "ocr" | null>(
     null,
   );
@@ -72,6 +77,7 @@ export function AnalysisInput({
       activeRequest.current = null;
       setPending(null);
       setResult(null);
+      setInfo(null);
       setError(null);
       if (fileRef.current) fileRef.current.value = "";
       setDraft("");
@@ -352,8 +358,24 @@ export function AnalysisInput({
     if (draftError) setError(null);
   };
 
+  const withInfo = (content: ReactNode) => <>
+    <main className="landing-main">{content}</main>
+    <footer className="site-footer">
+      <button className="info-link" type="button" aria-haspopup="dialog" onClick={() => openInfo()}>
+        {copy.estimateLink}
+      </button>
+    </footer>
+    {info !== null && <InfoDialog
+      dictionary={dictionary}
+      result={result}
+      section={info.section}
+      opener={info.opener}
+      onClose={() => setInfo(null)}
+    />}
+  </>;
+
   if (result)
-    return (
+    return withInfo(
       <AnalysisResult
         result={result}
         locale={locale}
@@ -361,11 +383,12 @@ export function AnalysisInput({
         sharing={dictionary.sharing}
         brand={dictionary.landing.brand}
         onReset={reset}
+        onEnvironmentInfo={() => openInfo("environment")}
       />
     );
 
   if (preview !== null)
-    return (
+    return withInfo(
       <section
         className="extraction-preview analysis-input"
         aria-labelledby="preview-title"
@@ -438,13 +461,9 @@ export function AnalysisInput({
   const activeCopy = copy.modes[activeMode];
   const hintId = `input-${activeMode}-hint`;
 
-  return (
+  return withInfo(
     <section className="analysis-input" aria-labelledby="analysis-input-title">
-      <div className="hero">
-        <div className="hero-symbol" aria-hidden="true"><BrandMark /></div>
-        <h1>{activeMode === "screenshot" ? dictionary.landing.screenshotTitle : dictionary.landing.title}</h1>
-        <h2 id="analysis-input-title" className="sr-only">{copy.title}</h2>
-      </div>
+      <h1 id="analysis-input-title" className="sr-only">{copy.title}</h1>
       <div className="composer">
       <div
         aria-label={copy.modeSelectorLabel}

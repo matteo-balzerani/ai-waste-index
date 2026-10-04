@@ -25,10 +25,17 @@ for (const locale of ["it", "en"] as const) for (const width of [320, 1366]) {
     await page.getByRole("textbox").fill("Synthetic public presentation example.");
     await page.getByRole("button", { name: d.analysis.submit, exact: true }).click();
     const region = page.getByRole("region", { name: d.analysis.resultTitle });
-    await expect(region.locator(".result-disclosures")).toContainText(d.analysis.experimentalNotice);
-    await expect(region.locator("#environment-note")).toBeVisible();
-    await expect(region.getByText(d.analysis.zeroScoreNotice)).toBeVisible();
-    await expect(region.locator(".metric-grid")).toContainText(d.analysis.energy);
+    await expect(region.getByText(d.analysis.experimentalLabel, { exact: true })).toBeVisible();
+    await expect(page.locator("#environment-note")).toHaveCount(0);
+    await expect(region.getByText(d.analysis.zeroScoreNotice)).toHaveCount(0);
+    await expect(region.locator(".metric-grid")).toContainText(d.analysis.compactEnergy);
+    await page.getByRole("button", { name: d.inputShell.estimateLink }).click();
+    const info = page.getByRole("dialog", { name: d.inputShell.estimateLink });
+    await expect(info).toContainText(d.analysis.experimentalNotice);
+    await expect(info).toContainText(d.analysis.environmentNotice);
+    await expect(info).toContainText(d.analysis.zeroScoreNotice);
+    await expect(info).toContainText(result.methodologyVersion);
+    await info.getByRole("button", { name: d.sharing.close }).click();
     await page.getByRole("button", { name: d.sharing.open, exact: true }).click();
     for (const format of ["badge", "card"] as const) {
       await page.getByRole("button", { name: format === "badge" ? d.sharing.showBadge : d.sharing.showCard, exact: true }).click();

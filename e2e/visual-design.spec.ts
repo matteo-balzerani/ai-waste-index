@@ -17,7 +17,7 @@ for (const locale of ["it", "en"] as const) {
     for (const width of [320, 390, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(`/${locale}`);
-      await expect(page.locator('.estimate-notice')).not.toHaveAttribute('open');
+      await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(page.getByRole('button', { name: d.analysis.submit })).toBeInViewport();
       await expect(page.getByText(d.landing.description)).toHaveCount(0);
       const tab = page.getByRole('tab', { name: d.inputShell.modes.text.tabLabel });
@@ -50,8 +50,10 @@ for (const locale of ["it", "en"] as const) {
         await page.getByRole('button', { name: d.analysis.submit }).click();
         await expect(page.locator('.class-badge strong')).toHaveText(className);
         await expect(page.locator('.score-value')).toHaveText(`${result.score}/100`);
+        await page.getByRole('button', { name: d.inputShell.estimateLink }).click();
         await expect(page.locator('.version-label')).toHaveText(`${d.analysis.methodologyVersion}: ${result.methodologyVersion}`);
         if (index === 0) await expect(page.getByText(d.analysis.zeroScoreNotice)).toBeVisible();
+        await page.getByRole('button', { name: d.sharing.close, exact: true }).click();
         await page.getByRole('button', { name: d.sharing.open, exact: true }).click();
         for (const format of ['Badge', d.sharing.showCard]) {
           await page.getByRole('button', { name: format, exact: true }).click();

@@ -8,13 +8,14 @@ import { classStyle } from "@/presentation/theme";
 import { UiIcon } from "./ui-icon";
 import { ResultSharing } from "./result-sharing";
 
-export function AnalysisResult({ result, locale, copy, sharing, brand, onReset }: {
+export function AnalysisResult({ result, locale, copy, sharing, brand, onReset, onEnvironmentInfo }: {
   result: PublicResult;
   locale: Locale;
   copy: Dictionary["analysis"];
   sharing: Dictionary["sharing"];
   brand: string;
   onReset: () => void;
+  onEnvironmentInfo: () => void;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus(); }, []);
@@ -22,14 +23,14 @@ export function AnalysisResult({ result, locale, copy, sharing, brand, onReset }
   const format = new Intl.NumberFormat(locale, { maximumSignificantDigits: 3 });
   const demo = result.methodologyVersion.startsWith("stub-");
   const metrics = [
-    { key: "energyWh", label: demo ? copy.demoEnergy : copy.energy, unit: "Wh", icon: "energy" },
-    { key: "co2eGrams", label: demo ? copy.demoCarbon : copy.carbon, unit: "gCO2e", icon: "carbon" },
-    { key: "waterMl", label: demo ? copy.demoWater : copy.water, unit: "mL", icon: "water" },
+    { key: "energyWh", label: copy.compactEnergy, unit: "Wh", icon: "energy" },
+    { key: "co2eGrams", label: copy.compactCarbon, unit: "gCO2e", icon: "carbon" },
+    { key: "waterMl", label: copy.compactWater, unit: "mL", icon: "water" },
   ] as const;
   return (
     <section className="analysis-result" aria-labelledby="result-title">
       <div className="result-heading">
-        <h1 id="result-title" ref={heading} tabIndex={-1}>{copy.resultTitle}</h1>
+        <h1 id="result-title" className="sr-only" ref={heading} tabIndex={-1}>{copy.resultTitle}</h1>
         <button className="text-action" type="button" onClick={onReset}>
           <UiIcon name="refresh" /> {copy.newAnalysis}
         </button>
@@ -49,32 +50,24 @@ export function AnalysisResult({ result, locale, copy, sharing, brand, onReset }
             <span aria-hidden="true" className="status-dot" />
             {demo ? copy.demoLabel : copy.experimentalLabel}
           </span>
-          <span className="version-label">{copy.methodologyVersion}: {result.methodologyVersion}</span>
         </div>
-        {demo && <p className="demo-notice" role="note">{copy.demoNotice}</p>}
-        {result.score === 0 && <p className="zero-notice" role="note">{copy.zeroScoreNotice}</p>}
-        {!demo && <div className="result-disclosures">
-          <p>{copy.generationNotice} {copy.scoreBasis}</p>
-          <p>{copy.experimentalNotice} {sharing.disclaimer}</p>
-        </div>}
-        <div className="metrics-heading"><h2>{demo ? copy.demoLabel : copy.estimatesTitle}</h2></div>
         <div className="metric-grid">
           {metrics.map(({ key, label, unit, icon }) => {
             const metric = result.estimates[key];
-            return <article className="metric" key={key} aria-describedby={!demo && key !== "energyWh" ? "environment-note" : undefined}>
-              <h3><span className={`metric-icon ${key}`} aria-hidden="true"><UiIcon name={icon} /></span>{label}</h3>
+            const environmental = !demo && key !== "energyWh";
+            return <article className="metric" key={key}>
+              <h2><span className={`metric-icon ${key}`} aria-hidden="true"><UiIcon name={icon} /></span>{label}
+                {environmental && <button className="metric-info" type="button" aria-haspopup="dialog"
+                  aria-label={`${label}: ${copy.environmentInfo}`} onClick={onEnvironmentInfo}>*</button>}
+              </h2>
               <p className="metric-value"><span className="sr-only">{demo ? copy.demoLabel : copy.estimatedValue} </span><strong>{format.format(metric.value)}</strong> <span>{unit}</span></p>
-              <p className="metric-range"><span>{demo ? copy.demoRange : copy.estimatedRange}{!demo && key !== "energyWh" ? "*" : ""}</span><br />{format.format(metric.low)}–{format.format(metric.high)} {unit}</p>
+              <p className="metric-range"><span className="sr-only">{demo ? copy.demoRange : copy.estimatedRange}: </span>{format.format(metric.low)}–{format.format(metric.high)} {unit}
+                {environmental && <button className="metric-info" type="button" aria-haspopup="dialog"
+                  aria-label={`${label}: ${copy.estimatedRange} — ${copy.environmentInfo}`} onClick={onEnvironmentInfo}>*</button>}
+              </p>
             </article>;
           })}
         </div>
-        {!demo && <p id="environment-note" className="environment-note" role="note">{copy.environmentNotice}</p>}
-        <details className="methodology-copy">
-          <summary>{copy.methodologyTitle}</summary>
-          <div className="disclosure-body">
-            {!demo && <><p>{copy.methodologyBody}</p><p>{copy.disclaimer}</p><p>{copy.inferenceNotice}</p><p>{copy.comparabilityNotice}</p></>}<p>{copy.privacy}</p>
-          </div>
-        </details>
       </div>
       <ResultSharing result={result} locale={locale} analysis={copy} copy={sharing} brand={brand} />
     </section>

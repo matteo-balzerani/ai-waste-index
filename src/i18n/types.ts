@@ -32,6 +32,10 @@ export interface Dictionary {
     };
   };
   analysis: {
+    compactEnergy: string;
+    compactCarbon: string;
+    compactWater: string;
+    environmentInfo: string;
     submit: string;
     loadingLabel: string;
     pending: string;
@@ -118,6 +122,11 @@ export interface Dictionary {
     manualLabel: string;
   };
   apiMessages: Record<ApiMessageCode, string>;
+  info: {
+    privacyTitle: string;
+    privacyBody: string;
+    inputTitle: string;
+  };
 }
 
 interface InputModeCopy {

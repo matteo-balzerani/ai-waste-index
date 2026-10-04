@@ -47,8 +47,7 @@ export function Landing({
         </nav>
       </header>
 
-      <main className="landing-main">
-        <AnalysisInput
+      <AnalysisInput
           key={locale}
           copy={dictionary.inputShell}
           dictionary={dictionary}
@@ -56,25 +55,7 @@ export function Landing({
           maxTextCodePoints={maxTextCodePoints}
           maxUrlChars={maxUrlChars}
           ocrLimits={ocrLimits}
-        />
-
-      </main>
-      <footer className="site-footer">
-        <details className="estimate-notice">
-          <summary>{dictionary.inputShell.estimateLink}</summary>
-          <div className="disclosure-body">
-            <h2>{landing.estimateNoticeTitle}</h2>
-            <p>{landing.estimateNoticeBody}</p>
-            <p>{dictionary.analysis.methodologyBody}</p>
-            <p>{dictionary.analysis.experimentalNotice}</p>
-            <p>{dictionary.analysis.disclaimer}</p>
-            <p>{dictionary.analysis.environmentNotice}</p>
-            <p>{dictionary.analysis.inferenceNotice}</p>
-            <p>{dictionary.analysis.comparabilityNotice}</p>
-            <p>{dictionary.inputShell.privacyNotice}</p>
-          </div>
-        </details>
-      </footer>
+      />
     </div>
   );
 }

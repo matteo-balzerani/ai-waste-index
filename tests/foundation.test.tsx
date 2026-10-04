@@ -18,7 +18,7 @@ describe("public application foundation", () => {
       );
 
       expect(
-        screen.getByRole("heading", { name: dictionary.landing.title }),
+        screen.getByRole("heading", { name: dictionary.inputShell.title }),
       ).toBeInTheDocument();
       expect(
         screen.getByRole("navigation", {
