@@ -52,12 +52,12 @@ for (const locale of ["it", "en"] as const) {
       await expect(page.getByTestId("advanced-energy")).toHaveCount(0);
     });
   }
-  test(`${locale}: live Advanced catalog and all six models`, async ({ page, request }) => {
+  test(`${locale}: live Advanced catalog and all seven models`, async ({ page, request }) => {
     test.skip(process.env.E2E_ADVANCED !== "1", "Local calculator explicitly disabled");
     const response = await request.get("/api/advanced/models"); expect(response.status()).toBe(200);
     expect(response.headers()["cache-control"]).toContain("no-store");
     const live = await response.json();
-    expect(live.providers.flatMap((p: { models: string[] }) => p.models)).toHaveLength(6);
+    expect(live.providers.flatMap((p: { models: string[] }) => p.models)).toHaveLength(7);
     await page.goto(`/${locale}`); await page.getByRole("button", { name: d.productModes.advanced, exact: true }).click();
     await page.getByRole("radio", { name: c.fromTokens, exact: true }).check();
     for (const provider of live.providers) for (const model of provider.models) {

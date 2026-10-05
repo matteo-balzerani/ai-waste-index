@@ -24,10 +24,12 @@ const fixture = {
   score: 23,
   class: "G",
   methodologyVersion: "stub-contract-fixture",
+  scoreVersion: "fixture-score", source: { name: "EcoLogits" as const, version: "fixture-only" },
+  scenario: { provider: "fixture", model: "fixture", outputTokens: 25, durationSource: "estimated" as const, tokenSource: "text-reference" as const }, warnings: [],
   estimates: {
-    energyWh: { low: 0.1, value: 1.25, high: 3 },
-    co2eGrams: { low: 0, value: 0, high: 0 },
-    waterMl: { low: 1, value: 2, high: 3 },
+    energyWh: { kind: "range" as const, low: 0.1, high: 3 },
+    co2eGrams: { kind: "point" as const, value: 0 },
+    waterMl: { kind: "range" as const, low: 1, high: 3 },
   },
 };
 function setup(locale: "it" | "en" = "en", limit: number | null = 64) {
@@ -93,15 +95,13 @@ describe("one-shot text flow", () => {
       expect(screen.getByText(dictionary.analysis.demoLabel, { selector: ".estimate-chip" })).toBeInTheDocument();
       fireEvent.click(screen.getByRole("button", { name: dictionary.inputShell.estimateLink }));
       expect(screen.getByText(dictionary.analysis.demoNotice)).toBeInTheDocument();
-      expect(screen.getByText(`${dictionary.analysis.methodologyVersion}: ${fixture.methodologyVersion}`)).toBeInTheDocument();
+      expect(screen.getByText(`${dictionary.analysis.methodologyVersion}: ${fixture.methodologyVersion} · ${fixture.source.name} ${fixture.source.version} · ${dictionary.analysis.scoreVersion}: ${fixture.scoreVersion}`)).toBeInTheDocument();
       fireEvent.click(screen.getByRole("button", { name: dictionary.sharing.close }));
       expect(screen.getByText("G")).toBeInTheDocument();
       expect(
-        screen.getByText(locale === "it" ? "1,25" : "1.25").closest("p"),
-      ).toHaveTextContent(locale === "it" ? "1,25 Wh" : "1.25 Wh");
-      expect(
-        screen.getByText(locale === "it" ? /0,1–3 Wh/ : /0.1–3 Wh/),
-      ).toBeInTheDocument();
+        screen.getByText(locale === "it" ? "0,1–3" : "0.1–3").closest("p"),
+      ).toHaveTextContent(locale === "it" ? "0,1–3 Wh" : "0.1–3 Wh");
+      expect(screen.getByText(locale === "it" ? "0,1–3" : "0.1–3")).toBeInTheDocument();
       expect(
         screen.getByText(dictionary.analysis.demoLabel, { selector: ".estimate-chip" }),
       ).toBeInTheDocument();
@@ -190,7 +190,7 @@ describe("one-shot text flow", () => {
       ...fixture,
       estimates: {
         ...fixture.estimates,
-        energyWh: { low: 5, value: 2, high: 3 },
+        energyWh: { kind: "range" as const, low: 5, high: 3 },
       },
     }),
     Response.json({ error: { code: "RATE_LIMITED" } }, { status: 500 }),

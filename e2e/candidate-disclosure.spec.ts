@@ -6,7 +6,7 @@ for (const locale of ["it", "en"] as const) for (const width of [320, 1366]) {
   test(`${locale}: GPU disclosure, PNG and fallback at ${width}px without version prefix`, async ({ page }) => {
     const d = getDictionary(locale);
     const result = { ...sharingFixture, score: 0, methodologyVersion: "preview-public-fixture",
-      estimates: { ...sharingFixture.estimates, energyWh: { low: 0.000001, value: 0.000002, high: 0.000003 } } };
+      estimates: { ...sharingFixture.estimates, energyWh: { kind: "range" as const, low: 0.000001, high: 0.000003 } } };
     await page.setViewportSize({ width, height: 900 });
     await page.addInitScript(() => {
       const draw = CanvasRenderingContext2D.prototype.fillText;

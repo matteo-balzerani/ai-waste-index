@@ -37,12 +37,12 @@ describe("public sharing presentation", () => {
         expect(text).not.toMatch(/https?:|data:|blob:/);
       }
       expect(model.resultText).toContain(
-        locale === "it" ? "1,25 Wh" : "1.25 Wh",
+        locale === "it" ? "0,1–3 Wh" : "0.1–3 Wh",
       );
       expect(model.resultText).toContain(
         locale === "it" ? "0,1–3 Wh" : "0.1–3 Wh",
       );
-      expect(model.resultText).toContain("0–0 gCO2e");
+      expect(model.resultText).toContain("0 gCO2e");
       expect(model.resultText).toContain("1–3 mL");
       expect(model.badgeText).not.toContain("gCO2e");
       expect(JSON.stringify(sharingFixture)).toBe(before);

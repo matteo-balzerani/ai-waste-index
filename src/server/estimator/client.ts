@@ -187,7 +187,7 @@ export function createEstimatorClient(
   dependencies: EstimatorClientDependencies = {},
 ): EstimatorClient {
   const fetchImplementation = dependencies.fetch ?? globalThis.fetch;
-  const endpoint = new URL("/internal/v1/estimate", config.baseUrl);
+  const endpoint = new URL("/internal/v2/estimate", config.baseUrl);
 
   return Object.freeze({
     async estimate(
@@ -243,12 +243,9 @@ export function createEstimatorClient(
           throw unavailable();
         }
 
-        return publicResultSchema.parse({
-          methodologyVersion: parsed.data.methodologyVersion,
-          score: parsed.data.score,
-          class: parsed.data.class,
-          estimates: parsed.data.estimates,
-        });
+        const { schemaVersion: _, ...result } = parsed.data;
+        void _;
+        return publicResultSchema.parse(result);
       } catch (error) {
         if (error instanceof EstimatorClientError) {
           throw error;

@@ -9,7 +9,7 @@ import {
   sourceTypeSchema,
 } from "./common";
 
-export const estimatorSchemaVersion = "1.0" as const;
+export const estimatorSchemaVersion = "2.0" as const;
 
 export function createEstimateRequestSchema(maxTextCodePoints: number) {
   return z.strictObject({

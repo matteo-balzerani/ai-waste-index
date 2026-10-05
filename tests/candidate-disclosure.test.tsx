@@ -12,7 +12,7 @@ for (const locale of ["it", "en"] as const) {
     for (const version of ["experimental-public-fixture", "0.7.3-example", "preview-public-fixture"]) {
       it(`preserves real estimate meaning for ${version}`, () => {
         const result = { ...sharingFixture, score: 0, methodologyVersion: version,
-          estimates: { ...sharingFixture.estimates, energyWh: { low: 0.000001, value: 0.000002, high: 0.000003 } } };
+          estimates: { ...sharingFixture.estimates, energyWh: { kind: "range" as const, low: 0.000001, high: 0.000003 } } };
         const model = createShareModel(result, locale, d.analysis, d.sharing, d.landing.brand);
         const openInfo = vi.fn();
         render(<AnalysisResult result={result} locale={locale} copy={d.analysis} sharing={d.sharing} brand={d.landing.brand} onReset={() => {}} onEnvironmentInfo={openInfo} />);
@@ -31,9 +31,9 @@ for (const locale of ["it", "en"] as const) {
         for (const required of [d.analysis.environmentNotice, d.analysis.disclaimer, d.analysis.inferenceNotice,
           d.analysis.comparabilityNotice]) expect(model.resultText).toContain(required);
         expect(model.badgeText).not.toContain(d.analysis.environmentNotice);
-        expect(model.metrics[0]!.value).toBe(`${new Intl.NumberFormat(locale, { maximumSignificantDigits: 3 }).format(0.000002)} Wh`);
+        expect(model.metrics[0]!.value).toBe(`${new Intl.NumberFormat(locale, { maximumSignificantDigits: 3 }).format(0.000001)}–${new Intl.NumberFormat(locale, { maximumSignificantDigits: 3 }).format(0.000003)} Wh`);
         for (const metric of model.metrics.slice(1)) {
-          expect(metric.label).toContain("*"); expect(metric.range).toContain("*");
+          expect(metric.label).toContain("*"); expect(metric.range).toBeTruthy();
         }
       });
     }

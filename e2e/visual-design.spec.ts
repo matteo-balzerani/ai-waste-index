@@ -1,13 +1,15 @@
 import { expect, test } from "@playwright/test";
 import { getDictionary } from "../src/i18n/dictionaries";
+import { sharingFixture } from "../tests/helpers/sharing";
 
 // Arbitrary black-box contract fixtures: no estimator-derived vectors or class mapping.
 const fixture = {
+  ...sharingFixture,
   score: 23, class: "G", methodologyVersion: "experimental-design-fixture",
   estimates: {
-    energyWh: { low: .7, value: 1.2, high: 2 },
-    co2eGrams: { low: .3, value: .5, high: .9 },
-    waterMl: { low: 4, value: 8, high: 14 },
+    energyWh: { kind: "range" as const, low: .7, high: 2 },
+    co2eGrams: { kind: "range" as const, low: .3, high: .9 },
+    waterMl: { kind: "range" as const, low: 4, high: 14 },
   },
 };
 for (const locale of ["it", "en"] as const) {
@@ -51,7 +53,7 @@ for (const locale of ["it", "en"] as const) {
         await expect(page.locator('.class-badge strong')).toHaveText(className);
         await expect(page.locator('.score-value')).toHaveText(`${result.score}/100`);
         await page.getByRole('button', { name: d.inputShell.estimateLink }).click();
-        await expect(page.locator('.version-label')).toHaveText(`${d.analysis.methodologyVersion}: ${result.methodologyVersion}`);
+        await expect(page.locator('.version-label')).toHaveText(`${d.analysis.methodologyVersion}: ${result.methodologyVersion} · ${result.source.name} ${result.source.version} · ${d.analysis.scoreVersion}: ${result.scoreVersion}`);
         if (index === 0) await expect(page.getByText(d.analysis.zeroScoreNotice)).toBeVisible();
         await page.getByRole('button', { name: d.sharing.close, exact: true }).click();
         await page.getByRole('button', { name: d.sharing.open, exact: true }).click();

@@ -18,14 +18,16 @@ const environment = {
 const input = { sourceType: "text", text: "A sample 👋", locale: "en" };
 // Arbitrary wire fixture only; no assertion about scoring relationships.
 const result = {
-  schemaVersion: "1.0",
+  schemaVersion: "2.0",
   methodologyVersion: "contract-test",
+  scoreVersion: "fixture-score", source: { name: "EcoLogits" as const, version: "fixture-only" },
+  scenario: { provider: "fixture", model: "fixture", outputTokens: 25, durationSource: "estimated" as const, tokenSource: "text-reference" as const }, warnings: [],
   score: 37,
   class: "B",
   estimates: {
-    energyWh: { low: 1, value: 2, high: 3 },
-    co2eGrams: { low: 0, value: 0, high: 0 },
-    waterMl: { low: 2, value: 3, high: 5 },
+    energyWh: { kind: "range" as const, low: 1, high: 3 },
+    co2eGrams: { kind: "point" as const, value: 0 },
+    waterMl: { kind: "range" as const, low: 2, high: 5 },
   },
 };
 function upstream(body: unknown = result) {
@@ -79,6 +81,7 @@ describe("local analysis route", () => {
       expect(response.headers.get("cache-control")).toBe("no-store, max-age=0");
       expect(response.headers.get("pragma")).toBe("no-cache");
       const publicResult = {
+        scoreVersion: result.scoreVersion, source: result.source, scenario: result.scenario, warnings: result.warnings,
         score: result.score,
         class: result.class,
         methodologyVersion: result.methodologyVersion,
@@ -89,7 +92,7 @@ describe("local analysis route", () => {
       expect(JSON.parse(fetch.mock.calls[0]![1]!.body as string)).toEqual({
         ...input,
         locale,
-        schemaVersion: "1.0",
+        schemaVersion: "2.0",
       });
       for (const log of logs) expect(log).not.toHaveBeenCalled();
     },
@@ -260,7 +263,7 @@ describe("local analysis route", () => {
           ...result,
           estimates: {
             ...result.estimates,
-            energyWh: { low: 10, value: 2, high: 3 },
+            energyWh: { kind: "range" as const, low: 10, high: 3 },
           },
         }),
       );

@@ -28,7 +28,9 @@ export function createShareModel(
   const format = new Intl.NumberFormat(locale, { maximumSignificantDigits: 3 });
   const scoreValue = new Intl.NumberFormat(locale).format(result.score);
   const score = `${scoreValue}/100`;
-  const methodology = `${analysis.methodologyVersion}: ${result.methodologyVersion}`;
+  const methodology = `${analysis.methodologyVersion}: ${result.methodologyVersion} · ${result.source.name} ${result.source.version} · ${analysis.scoreVersion}: ${result.scoreVersion}`;
+  const scenario = `${analysis.referenceScenario}: ${result.scenario.model} · ${result.scenario.outputTokens.toLocaleString(locale)} ${analysis.outputTokens}`;
+  const warnings = result.warnings.map(code => analysis.warnings[code]);
   const demo = result.methodologyVersion.startsWith("stub-");
   const demoNotice = demo ? analysis.demoNotice : null;
   const experimentalNotice = demo ? null : analysis.experimentalNotice;
@@ -37,11 +39,11 @@ export function createShareModel(
     ...(result.score === 0 ? [analysis.zeroScoreNotice] : []),
   ].join(" ");
   const badgeFooter = [
-    ...(!demo ? [analysis.scopeNotice, analysis.scoreBasis, analysis.experimentalNotice] : []),
+    ...(!demo ? [scenario, analysis.tokenNotice, ...warnings, analysis.scopeNotice, analysis.scoreBasis, analysis.experimentalNotice] : []),
     disclaimer, methodology,
   ];
   const cardFooter = [
-    ...(!demo ? [analysis.scopeNotice, analysis.scoreBasis, analysis.environmentNotice,
+    ...(!demo ? [scenario, analysis.tokenNotice, ...warnings, analysis.scopeNotice, analysis.scoreBasis, analysis.environmentNotice,
       analysis.experimentalNotice, analysis.disclaimer, analysis.inferenceNotice, analysis.comparabilityNotice] : []),
     disclaimer, methodology,
   ];
@@ -53,8 +55,8 @@ export function createShareModel(
   ] as const).map(([label, key, unit]) => {
     const metric = result.estimates[key];
     const rangeLabel = demo ? analysis.demoRange : analysis.estimatedRange + (key !== "energyWh" ? "*" : "");
-    return { label, value: `${format.format(metric.value)} ${unit}`,
-      range: `${rangeLabel}: ${format.format(metric.low)}–${format.format(metric.high)} ${unit}` };
+    return { label, value: metric.kind === "point" ? `${format.format(metric.value)} ${unit}` : `${format.format(metric.low)}–${format.format(metric.high)} ${unit}`,
+      range: metric.kind === "range" ? rangeLabel : (demo ? analysis.demoLabel : analysis.estimatedValue) };
   });
   return {
     brand, context, scoreLabel: analysis.scoreLabel, score, scoreValue,

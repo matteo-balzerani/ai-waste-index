@@ -99,6 +99,8 @@ export interface Dictionary {
     };
   };
   analysis: {
+    referenceScenario: string; scoreVersion: string; outputTokens: string; tokenNotice: string;
+    warnings: Record<"MODEL_ARCHITECTURE_ASSUMED" | "TEXT_ONLY_ESTIMATE" | "WATER_FACTOR_WORLD_DEFAULT", string>;
     compactEnergy: string;
     compactCarbon: string;
     compactWater: string;

@@ -33,8 +33,10 @@ test("mobile metrics keep readable ranges and units", async ({ page }) => {
     await page.goto(`/${locale}`);
     await page.getByRole("textbox").fill("Synthetic metrics review.");
     await page.getByRole("button", { name: d.analysis.submit, exact: true }).click();
-    await expect(page.locator(".metric-range")).toHaveCount(3);
-    expect(await page.locator(".metric-range").first().evaluate(e => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(12);
+    await expect(page.locator(".metric-value")).toHaveCount(3);
+    await expect(page.locator(".metric-value strong")).toHaveText(locale === "it" ? ["0,1–3", "0", "1–3"] : ["0.1–3", "0", "1–3"]);
+    await expect(page.locator(".metric-value")).toContainText(["Wh", "g", "mL"]);
+    expect(await page.locator(".metric-value").first().evaluate(e => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(12);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   }
 });

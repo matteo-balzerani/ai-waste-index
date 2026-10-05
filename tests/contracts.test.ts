@@ -24,12 +24,14 @@ import {
 function createPublicResultFixture() {
   return {
     methodologyVersion: "contract-test-v1",
+  scoreVersion: "fixture-score", source: { name: "EcoLogits" as const, version: "fixture-only" },
+  scenario: { provider: "fixture", model: "fixture", outputTokens: 25, durationSource: "estimated" as const, tokenSource: "text-reference" as const }, warnings: [],
     score: 42,
     class: "C",
     estimates: {
-      energyWh: { low: 0, value: 1, high: 2 },
-      co2eGrams: { low: 3, value: 3, high: 5 },
-      waterMl: { low: 8, value: 13, high: 21 },
+      energyWh: { kind: "range" as const, low: 0.1, high: 2 },
+      co2eGrams: { kind: "range" as const, low: 3, high: 5 },
+      waterMl: { kind: "range" as const, low: 8, high: 21 },
     },
   };
 }
@@ -64,19 +66,19 @@ describe("analysis request schema", () => {
 
 describe("metric and public result schemas", () => {
   it("accepts ordered and equal metric bounds", () => {
-    expect(metricEstimateSchema.safeParse({ low: 1, value: 1, high: 1 }).success).toBe(
+    expect(metricEstimateSchema.safeParse({ kind: "point" as const, value: 1 }).success).toBe(
       true,
     );
-    expect(metricEstimateSchema.safeParse({ low: 1, value: 2, high: 3 }).success).toBe(
+    expect(metricEstimateSchema.safeParse({ kind: "range" as const, low: 1, high: 3 }).success).toBe(
       true,
     );
   });
 
   it.each([
-    { low: 2, value: 1, high: 3 },
-    { low: 1, value: 4, high: 3 },
-    { low: 3, value: 2, high: 1 },
-    { low: -1, value: 0, high: 1 },
+    { kind: "range", low: 2, value: 1, high: 3 },
+    { kind: "point", value: Infinity },
+    { kind: "range" as const, low: 3, high: 1 },
+    { kind: "range" as const, low: -1, high: 1 },
     { low: 0, value: Number.NaN, high: 1 },
     { low: 0, value: 1, high: Number.POSITIVE_INFINITY },
     { low: 0, value: 1 },
@@ -110,9 +112,9 @@ describe("metric and public result schemas", () => {
   });
 
   it("rejects extra result fields and unordered nested metrics without repair", () => {
-    const extra = { ...createPublicResultFixture(), schemaVersion: "1.0" };
+    const extra = { ...createPublicResultFixture(), schemaVersion: "2.0" };
     const unordered = structuredClone(createPublicResultFixture());
-    unordered.estimates.waterMl.value = 34;
+    unordered.estimates.waterMl.low = 34;
     const before = structuredClone(unordered);
 
     expect(publicResultSchema.safeParse(extra).success).toBe(false);
@@ -176,10 +178,10 @@ describe("estimator wire schemas", () => {
   });
 
   it.each([
-    { schemaVersion: "2.0", sourceType: "text", text: "A", locale: "en" },
-    { schemaVersion: "1.0", sourceType: "text", text: " ", locale: "en" },
+    { schemaVersion: "1.0", sourceType: "text", text: "A", locale: "en" },
+    { schemaVersion: "2.0", sourceType: "text", text: " ", locale: "en" },
     {
-      schemaVersion: "1.0",
+      schemaVersion: "2.0",
       sourceType: "text",
       text: "A",
       locale: "en",

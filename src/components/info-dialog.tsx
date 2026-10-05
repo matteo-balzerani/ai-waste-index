@@ -40,13 +40,14 @@ export function InfoDialog({ dictionary: d, result, section, opener, onClose }: 
       <button className="text-action" type="button" onClick={onClose}>{d.sharing.close}</button>
     </div>
     <div className="info-scroll disclosure-body">
-      {result && <p className="version-label">{d.analysis.methodologyVersion}: {result.methodologyVersion}</p>}
+      {result && <p className="version-label">{d.analysis.methodologyVersion}: {result.methodologyVersion} · {result.source.name} {result.source.version} · {d.analysis.scoreVersion}: {result.scoreVersion}</p>}
       {demo ? <p>{d.analysis.demoNotice}</p> : <>
         <h3>{d.landing.estimateNoticeTitle}</h3>
         <p>{d.landing.estimateNoticeBody}</p>
         <p>{d.analysis.experimentalNotice} {d.sharing.disclaimer}</p>
         <p>{d.analysis.methodologyBody}</p>
         <p>{d.analysis.scoreBasis}</p>
+        <p>{d.analysis.tokenNotice}</p>
         <p>{d.analysis.disclaimer}</p>
         <p>{d.analysis.inferenceNotice}</p>
         <p>{d.analysis.comparabilityNotice}</p>

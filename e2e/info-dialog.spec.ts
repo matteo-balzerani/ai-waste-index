@@ -92,7 +92,7 @@ for (const locale of ["it", "en"] as const) {
       await expect(page.getByText(d.analysis.experimentalLabel, { exact: true })).toBeVisible();
       await expect(page.getByText(d.analysis.zeroScoreNotice)).toHaveCount(0);
       for (const label of [d.analysis.compactCarbon, d.analysis.compactWater]) {
-        for (const name of [`${label}: ${d.analysis.environmentInfo}`, `${label}: ${d.analysis.estimatedRange} — ${d.analysis.environmentInfo}`]) {
+        for (const name of [`${label}: ${d.analysis.environmentInfo}`]) {
           const asterisk = page.getByRole("button", { name, exact: true });
           await asterisk.focus();
           await page.keyboard.press("Enter");

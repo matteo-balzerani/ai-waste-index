@@ -4,9 +4,11 @@ export const sharingFixture: PublicResult = {
   score: 23,
   class: "G",
   methodologyVersion: "stub-sharing-fixture",
+  scoreVersion: "fixture-score", source: { name: "EcoLogits" as const, version: "fixture-only" },
+  scenario: { provider: "fixture", model: "fixture", outputTokens: 25, durationSource: "estimated" as const, tokenSource: "text-reference" as const }, warnings: [],
   estimates: {
-    energyWh: { low: 0.1, value: 1.25, high: 3 },
-    co2eGrams: { low: 0, value: 0, high: 0 },
-    waterMl: { low: 1, value: 2, high: 3 },
+    energyWh: { kind: "range" as const, low: 0.1, high: 3 },
+    co2eGrams: { kind: "point" as const, value: 0 },
+    waterMl: { kind: "range" as const, low: 1, high: 3 },
   },
 };

@@ -60,15 +60,18 @@ export function AnalysisResult({ result, locale, copy, sharing, brand, onReset, 
                 {environmental && <button className="metric-info" type="button" aria-haspopup="dialog"
                   aria-label={`${label}: ${copy.environmentInfo}`} onClick={onEnvironmentInfo}>*</button>}
               </h2>
-              <p className="metric-value"><span className="sr-only">{demo ? copy.demoLabel : copy.estimatedValue} </span><strong>{format.format(metric.value)}</strong> <span>{unit}</span></p>
-              <p className="metric-range"><span className="sr-only">{demo ? copy.demoRange : copy.estimatedRange}: </span>{format.format(metric.low)}–{format.format(metric.high)} {unit}
-                {environmental && <button className="metric-info" type="button" aria-haspopup="dialog"
-                  aria-label={`${label}: ${copy.estimatedRange} — ${copy.environmentInfo}`} onClick={onEnvironmentInfo}>*</button>}
+              <p className="metric-value"><span className="sr-only">{metric.kind === "range" ? copy.estimatedRange : copy.estimatedValue} </span>
+                <strong>{metric.kind === "point" ? format.format(metric.value) : `${format.format(metric.low)}–${format.format(metric.high)}`}</strong> <span>{unit}</span>
               </p>
             </article>;
           })}
         </div>
       </div>
+      {!demo && <div className="result-disclosures">
+        <p>{copy.referenceScenario}: {result.scenario.model} · {result.scenario.outputTokens.toLocaleString(locale)} {copy.outputTokens}</p>
+        <p>{copy.tokenNotice}</p>
+        {result.warnings.map(code => <p key={code}>{copy.warnings[code]}</p>)}
+      </div>}
       <ResultSharing result={result} locale={locale} analysis={copy} copy={sharing} brand={brand} />
     </section>
   );

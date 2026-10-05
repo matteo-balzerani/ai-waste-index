@@ -1,5 +1,15 @@
 # AI Waste Index public application
 
+## Current local behavior — common calculator
+
+Blame and Advanced use the same external server-side calculator. Blame declares a
+GPT-5.6 Sol reference scenario and displays native energy/CO₂e/water estimates plus
+an energy-based game score. Advanced adds GPT-5.6 Sol to its catalog and retains its
+energy-only response. No calculation coefficients or score logic belong in this app.
+Blame sends confirmed text for analysis; Advanced counts visible text in the browser.
+Results and shares retain method/source/score versions, scenario and limitations.
+The internal Blame integration now uses schema 2.0; public analysis input is unchanged.
+
 ## Advanced energy
 
 Advanced estimates energy for one declared text generation. Select a provider/model,
@@ -40,7 +50,8 @@ pending work; refresh, navigation and locale changes discard them. API responses
 no-store, bounded bodies, existing local-demo admission and no content/result logging.
 An unavailable calculator offers retry; no frontend estimate or fallback exists. Full
 method and privacy explanations are available before submitting. IT and EN are supported.
-The calculator must be explicitly enabled by the local service operator. Production
+Advanced routes must be explicitly enabled by the local service operator. Blame uses
+the common calculator independently of that route flag. Production
 remains fail-closed. The previous Advanced chat prototype has been replaced.
 
 Public Next.js application for the AI Waste Index MVP. Blame estimates the consumption of one hypothetical AI generation of the visible text,
@@ -51,10 +62,10 @@ excluding discarded drafts and revisions. It does not judge waste, quality, usef
 The local Text, URL and Screenshot flows are implemented. Paste text, extract a public page, or read a
 screenshot in the browser. Extracted text always requires explicit confirmation of its editable preview.
 Analysis uses the authenticated estimator service and displays score, class, scenario ranges and methodology
-disclosure in IT/EN. The score is based on estimated GPU energy; CO₂e and water describe a conventional
-infrastructure share attributed to that energy. CPU, memory and other unquantified IT loads
-and their impacts are excluded, not zero. Both environmental metrics and ranges carry an
-accessible asterisk explanation. Water includes cooling and electricity-production consumption.
+disclosure in IT/EN. The score is a conventional game index based on modeled server and
+data-center energy. CO₂e and water cover the usage phase, excluding hardware production.
+Native ranges are displayed without a central energy estimate; model and token-count
+limitations are disclosed. Water includes cooling and electricity-production consumption.
 All real results, full text, badges and cards disclose experimental status and unverified physical
 accuracy, regardless of version prefix; scenario bounds are not confidence intervals or total uncertainty. Quota infrastructure is deferred until deployment is selected; this
 version is for loopback-only local demonstration, not production.
@@ -95,21 +106,23 @@ coverage, local environment files and local Codex instructions remain untracked.
 User-facing content and metadata come from validated dictionaries under `src/i18n/`. Supported routes are `/it`
 and `/en`. Requests without a locale prefix use `Accept-Language` and fall back to English; the selection is not
 stored in a cookie or browser storage. Both routes render a matching HTML `lang` attribute and read the configured text limit on the server at
-request time. Only that non-secret limit is passed to the input UI. Stable API warning/error codes already have entries in both dictionaries, ready for the later public
-schema and route steps.
+request time. Only validated public input/OCR limits reach the input UI. Stable API
+warning/error codes are mapped by both dictionaries; the schemas and routes are implemented.
 
 ## Contract schemas
 
 Shared Zod schemas under `src/contracts/` validate analysis input, public and estimator results, extraction preview
 responses and code-only error envelopes. All wire objects are strict. Text limits are supplied explicitly by the
-caller and use Unicode code points. Environmental metric schemas require finite non-negative values ordered as
-`low <= value <= high`; malformed values are rejected without repair or fallback. The schemas contain only the
+caller and use Unicode code points. Metrics are strict native `{kind: "point", value}`
+or `{kind: "range", low, high}` objects with finite numbers and `low <= high`. Energy is
+strictly positive; CO2e/water are nonnegative. Malformed values are rejected without repair
+or fallback. Blame results require source/scenario/warnings and method/score versions. The schemas contain only the
 public black-box wire contract and no scoring or calibration behaviour.
 
 ## Text analysis and input modes
 
 The landing page provides keyboard-operable Text, URL and Screenshot tabs in both locales. Draft text and URLs
-exist only in React component memory; selected files remain browser-local. Changing mode or navigating clears the
+exist only in React component memory; selected files remain browser-local. Changing a Blame source tab or navigating clears the
 active draft, including back-forward cache restoration. The application does not use cookies, browser storage, query parameters or history state for content/results.
 The Next.js development debug channel is disabled because it otherwise persists document diagnostics in IndexedDB;
 browser console forwarding to the development terminal is also disabled.
@@ -118,7 +131,7 @@ Direct text submits to `/api/analyze` without intermediate confirmation. The rou
 receipt time, validates Unicode/schema, calls the estimator once, and returns only validated public fields or
 safe error codes with no-store headers. The UI prevents duplicate submissions, cancels abandoned requests,
 and ignores stale completions. Result values and bounds are formatted with `Intl`; class comes directly from
-the estimator. Methodology versions beginning with `stub-` visibly identify demonstration values; `experimental-`
+the estimator. Versions beginning with `stub-` visibly identify demonstration values; all other
 versions identify experimental estimates. A zero rounded score with positive energy is explained in
 results and shares. Positive metrics use up to three significant digits and are not displayed as zero. Refresh,
 language navigation, back/forward restoration and starting again discard the result.
@@ -144,8 +157,10 @@ Both API paths also set no-store headers at the Next.js configuration boundary, 
 responses as well as the POST handlers. `e2e/api-headers.spec.ts` checks all seven supported HTTP methods
 against a running application and can also run against a production build via `E2E_BASE_URL`.
 
-These web APIs serve the product frontend only. POST is the application operation; GET, HEAD, PUT, PATCH and
-DELETE return 405 with no body. OPTIONS returns 204 with no body and advertises OPTIONS and POST in Allow.
+These web APIs serve the product frontend only. Analysis, extraction and Advanced estimates
+use POST; other methods return bodyless 405, and OPTIONS returns 204 advertising POST and
+OPTIONS. The Advanced catalog uses GET; HEAD and other unsupported methods return 405,
+and OPTIONS advertises GET and OPTIONS.
 The bodyless framework responses use the same no-store headers and introduce no JSON error code. The HTTP
 regression checks their status, empty body and allowed methods as well as cache headers.
 
@@ -245,10 +260,10 @@ the real browser OCR, cancellation, deadline and no-upload/no-storage tests to v
 ## Local sharing
 
 The result offers localized **Copy result text**, **Copy badge text** and **Show share card** actions. Result
-text includes all three environmental estimates with their estimated ranges; the compact badge and card show
+text includes all three native point/range environmental estimates; the compact badge and card show
 brand, estimated-generation-consumption context, returned score/class, methodology version and an estimate disclaimer.
-Every output from a `stub-*` methodology also includes the demonstration warning; `experimental-*`
-outputs carry the experimental accuracy notice in copied text, badges, HTML cards and PNG cards. These helpers only format
+Every output from a `stub-*` methodology includes the demonstration warning; every other
+methodology, regardless of prefix, carries the experimental accuracy notice in copied text, badges, HTML cards and PNG cards. These helpers only format
 returned fields; they never compute or infer a score, class or metric. Input content, source URLs and screenshot
 bytes are not available to the sharing component.
 
@@ -296,7 +311,8 @@ not be written to browser storage, logs or server-side persistence. Estimator in
 black-box HTTP contract from server-only code and environment-provided credentials. No browser code imports the
 client.
 
-Verification (2026-10-04): 440 unit/integration tests and 54 Chromium end-to-end tests pass.
-Typecheck/lint and the Webpack build pass. GPU/partial-allocation copy is covered in IT/EN result, text,
-badge, card, Canvas and HTML fallback with arbitrary public fixtures. Exact versions,
-one-generation scope, scenario ranges, zero-score notes and positive small values are preserved.
+Recorded common-calculator verification (2026-10-05): 512 app unit/integration tests
+and 74 Chromium scenarios verified (67 in the full run, seven corrected fixture/selector
+cases on targeted rerun). Typecheck/lint and Webpack build passed. Live IT/EN tests verify
+same-scenario Blame/Advanced energy parity and 320px/200% text. These dated results are
+implementation evidence, not a physical-accuracy claim or a new run from documentation upkeep.

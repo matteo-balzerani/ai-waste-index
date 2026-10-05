@@ -44,29 +44,24 @@ export function createAnalysisTextSchema(maxCodePoints: number) {
     });
 }
 
-const nonNegativeFiniteNumberSchema = z.number().min(0);
-
-export const metricEstimateSchema = z
-  .strictObject({
-    low: nonNegativeFiniteNumberSchema,
-    value: nonNegativeFiniteNumberSchema,
-    high: nonNegativeFiniteNumberSchema,
-  })
-  .refine(
-    ({ low, value, high }) => low <= value && value <= high,
-    { error: "Metric bounds must satisfy low <= value <= high" },
-  );
-
+export const metricEstimateSchema = z.discriminatedUnion("kind", [
+  z.strictObject({ kind: z.literal("point"), value: z.number().nonnegative() }),
+  z.strictObject({ kind: z.literal("range"), low: z.number().nonnegative(), high: z.number().nonnegative() })
+    .refine(({ low, high }) => low <= high, { error: "Metric bounds must satisfy low <= high" }),
+]);
 export const estimatesSchema = z.strictObject({
-  energyWh: metricEstimateSchema,
-  co2eGrams: metricEstimateSchema,
-  waterMl: metricEstimateSchema,
+  energyWh: metricEstimateSchema.refine(m => m.kind === "point" ? m.value > 0 : m.low > 0),
+  co2eGrams: metricEstimateSchema, waterMl: metricEstimateSchema,
 });
-
 export const resultFields = {
-  methodologyVersion: z.string().min(1),
-  score: z.number().int().min(0).max(100),
-  class: z.enum(["A", "B", "C", "D", "E", "F", "G"]),
+  methodologyVersion: z.string().min(1), scoreVersion: z.string().min(1),
+  source: z.strictObject({ name: z.literal("EcoLogits"), version: z.string().min(1) }),
+  scenario: z.strictObject({ provider: z.string().min(1), model: z.string().min(1),
+    outputTokens: z.number().int().min(1).max(1_000_000), durationSource: z.literal("estimated"),
+    tokenSource: z.literal("text-reference") }),
+  warnings: z.array(z.enum(["MODEL_ARCHITECTURE_ASSUMED", "TEXT_ONLY_ESTIMATE", "WATER_FACTOR_WORLD_DEFAULT"]))
+    .max(3).refine(values => new Set(values).size === values.length),
+  score: z.number().int().min(0).max(100), class: z.enum(["A", "B", "C", "D", "E", "F", "G"]),
   estimates: estimatesSchema,
 } as const;
 

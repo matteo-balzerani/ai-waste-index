@@ -24,7 +24,7 @@ export const advancedResultSchema = z.strictObject({
 export const advancedCatalogSchema = z.strictObject({
   methodologyVersion: identifier, source,
   providers: z.array(z.strictObject({ id: identifier, label: identifier,
-    models: z.array(identifier).min(1).max(6).refine(values => new Set(values).size === values.length),
+    models: z.array(identifier).min(1).max(7).refine(values => new Set(values).size === values.length),
   })).min(1).max(6).refine(values => new Set(values.map(v => v.id)).size === values.length),
   limits: z.strictObject({ maxOutputTokens: z.literal(1_000_000), maxDurationSeconds: z.literal(3600) }),
 });

@@ -28,14 +28,16 @@ const request: AnalyzeRequest = {
 
 // Arbitrary wire-shape fixture only; it encodes no methodological relationship.
 const estimatorResponse = {
-  schemaVersion: "1.0",
+  schemaVersion: "2.0",
   methodologyVersion: "contract-test-v1",
+  scoreVersion: "fixture-score", source: { name: "EcoLogits" as const, version: "fixture-only" },
+  scenario: { provider: "fixture", model: "fixture", outputTokens: 25, durationSource: "estimated" as const, tokenSource: "text-reference" as const }, warnings: [],
   score: 42,
   class: "C",
   estimates: {
-    energyWh: { low: 0, value: 1, high: 2 },
-    co2eGrams: { low: 3, value: 3, high: 5 },
-    waterMl: { low: 8, value: 13, high: 21 },
+    energyWh: { kind: "range" as const, low: 0.1, high: 2 },
+    co2eGrams: { kind: "range" as const, low: 3, high: 5 },
+    waterMl: { kind: "range" as const, low: 8, high: 21 },
   },
 } as const;
 
@@ -94,7 +96,7 @@ describe("server-only estimator client", () => {
     const destinationUrl = await listen(destination);
     const source = createServer((incoming, response) => {
       incoming.resume();
-      if (incoming.url !== "/internal/v1/estimate") {
+      if (incoming.url !== "/internal/v2/estimate") {
         redirectedRequests++;
         response.writeHead(500, requiredHeaders).end("{}");
         return;
@@ -134,6 +136,7 @@ describe("server-only estimator client", () => {
 
     await expect(client.estimate(request)).resolves.toEqual({
       methodologyVersion: estimatorResponse.methodologyVersion,
+      scoreVersion: estimatorResponse.scoreVersion, source: estimatorResponse.source, scenario: estimatorResponse.scenario, warnings: estimatorResponse.warnings,
       score: estimatorResponse.score,
       class: estimatorResponse.class,
       estimates: estimatorResponse.estimates,
@@ -141,7 +144,7 @@ describe("server-only estimator client", () => {
 
     expect(calls).toHaveLength(1);
     expect(String(calls[0]?.input)).toBe(
-      "https://estimator.example.test/internal/v1/estimate",
+      "https://estimator.example.test/internal/v2/estimate",
     );
     expect(calls[0]?.init?.method).toBe("POST");
     expect(calls[0]?.init?.cache).toBe("no-store");
@@ -149,7 +152,7 @@ describe("server-only estimator client", () => {
       config.apiKey,
     );
     expect(JSON.parse(String(calls[0]?.init?.body))).toEqual({
-      schemaVersion: "1.0",
+      schemaVersion: "2.0",
       ...request,
     });
   });
@@ -209,7 +212,7 @@ describe("server-only estimator client", () => {
           ...estimatorResponse,
           estimates: {
             ...estimatorResponse.estimates,
-            waterMl: { low: 8, value: 34, high: 21 },
+            waterMl: { kind: "range" as const, low: 22, high: 21 },
           },
         }),
     },
@@ -219,7 +222,7 @@ describe("server-only estimator client", () => {
     },
     {
       name: "unknown schema version",
-      response: () => jsonResponse({ ...estimatorResponse, schemaVersion: "2.0" }),
+      response: () => jsonResponse({ ...estimatorResponse, schemaVersion: "1.0" }),
     },
     {
       name: "unknown error code",
